@@ -1,0 +1,12 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Query {
+    UserDetails: User! @Authenticated
+}
+
+type Mutation {
+    AddUser(input: AddUserInput!): User!
+    UpdateUserDetails(input: UpdateUserInput!): User!
+}

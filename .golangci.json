@@ -1,0 +1,172 @@
+{
+  "run": {
+    "skip-files": [
+      "graph",
+      ".*_test\\.go"
+    ],
+    "skip-dirs": [
+      ".*/generated/*",
+      "graph"
+    ],
+    "skip-dirs-use-default": true,
+    "tests": true
+  },
+  "linters": {
+    "enable": [
+      "deadcode",
+      "errcheck",
+      "gosimple",
+      "govet",
+      "ineffassign",
+      "staticcheck",
+      "structcheck",
+      "typecheck",
+      "unused",
+      "varcheck",
+      "asciicheck",
+      "bodyclose",
+      "containedctx",
+      "contextcheck",
+      "cyclop",
+      "decorder",
+      "depguard",
+      "dogsled",
+      "durationcheck",
+      "errname",
+      "errorlint",
+      "exhaustive",
+      "exportloopref",
+      "forbidigo",
+      "funlen",
+      "gochecknoglobals",
+      "gochecknoinits",
+      "gocognit",
+      "goconst",
+      "gocritic",
+      "gocyclo",
+      "godot",
+      "godox",
+      "goerr113",
+      "goimports",
+      "revive",
+      "gomnd",
+      "gomoddirectives",
+      "goprintffuncname",
+      "gosec",
+      "grouper",
+      "ifshort",
+      "lll",
+      "maintidx",
+      "makezero",
+      "misspell",
+      "nakedret",
+      "nestif",
+      "nilerr",
+      "nilnil",
+      "nlreturn",
+      "noctx",
+      "paralleltest",
+      "stylecheck",
+      "tagliatelle",
+      "tenv",
+      "testpackage",
+      "tparallel",
+      "unconvert",
+      "unparam",
+      "wastedassign",
+      "whitespace",
+      "wsl"
+    ]
+  },
+  "linters-settings": {
+    "cyclop": {
+      "max-complexity": 8,
+      "package-average": 5,
+      "skip-tests": true
+    },
+    "decorder": {
+      "dec-order": ["const", "type", "var", "func"],
+      "disable-dec-order-check": false
+    },
+    "depguard": {
+      "additional-guards": [
+        {
+          "list-type": "denylist",
+          "packages": [
+            "github.com/stretchr/testify"
+          ],
+          "ignore-file-rules": ["**/*_test.go", "**/mock/**/*.go"]
+        }
+      ]
+    },
+    "dogsled": {
+      "max-blank-identifiers": 1
+    },
+    "errorlint": {
+      "errorf": true,
+      "asserts": true,
+      "comparison": false
+    },
+    "exhaustive": {
+      "check-generated": false,
+      "default-signifies-exhaustive": true,
+      "package-scope-only": true
+    },
+    "forbidigo": {
+      "forbid": [
+        "^print.*$",
+        "fmt\\.Print.*"
+      ],
+      "exclude_godoc_examples": true
+    },
+    "funlen": {
+      "lines": 30,
+      "statements": 30
+    },
+    "gocognit": {
+      "min-complexity": 5
+    },
+    "goconst": {
+      "min-occurrences": 2,
+      "ignore-tests": true,
+      "match-constant": true,
+      "numbers": true,
+      "ignore-calls": true
+    },
+    "gocyclo": {
+      "min-complexity": 5
+    },
+    "godot": {
+      "scope": "all",
+      "period": true,
+      "capital": true
+    },
+    "goimports": {
+      "local-prefixes": "github.com/weeb-vip/user"
+    },
+    "gosimple": {
+      "go": "1.18",
+      "checks": ["all"]
+    },
+    "lll": {
+      "line-length": 120,
+      "tab-width": 1
+    },
+    "maintidx": {
+      "under": 50
+    },
+    "misspell": {
+      "locale": "US",
+      "ignore-words": [
+
+      ]
+    },
+    "nestif": {
+      "min-complexity": 3
+    },
+    "nolintlint": {
+      "require-specific": true,
+      "require-explanation": true
+    }
+  }
+}

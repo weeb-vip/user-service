@@ -1,0 +1,18 @@
+{
+  "dbconfig": {
+    "host": "localhost",
+    "user": "postgres",
+    "password": "mysecretpassword",
+    "db": "users",
+    "port": "5432"
+  },
+  "AppConfig": {
+    "KeyRollingDurationInHours": 1
+  },
+  "snsconfig": {
+    "forgotpasswordtopic": "forgotpassword",
+    "refreshtokenexpiredtopic": "refreshtokenexpired",
+    "registrationcompletetopic": "registrationcomplete",
+    "userloggedintopic": "userloggedin"
+  }
+}

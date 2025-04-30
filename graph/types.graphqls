@@ -1,0 +1,30 @@
+enum Language {
+    TH
+    EN
+}
+
+type User @key(fields: "id") {
+    id: ID!
+    firstname: String!
+    lastname: String!
+    username: String!
+    language: Language!
+    email: String
+}
+
+input AddUserInput {
+    id: String!
+    firstname: String!
+    lastname: String!
+    username: String!
+    language: Language!
+    email: String
+}
+
+input UpdateUserInput {
+    firstname: String
+    lastname: String
+    username: String
+    email: String
+    language: Language
+}

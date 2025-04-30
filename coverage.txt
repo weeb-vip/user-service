@@ -1,0 +1,19 @@
+mode: atomic
+github.com/weeb-vip/user/http/handlers/logger/logger.go:12.48,13.43 1 1
+github.com/weeb-vip/user/http/handlers/logger/logger.go:13.43,15.3 1 1
+github.com/weeb-vip/user/http/handlers/logger/logger.go:17.45,18.71 1 1
+github.com/weeb-vip/user/http/handlers/logger/logger.go:18.71,24.3 2 1
+github.com/weeb-vip/user/http/handlers/logger/logger.go:27.53,31.2 2 1
+github.com/weeb-vip/user/internal/services/credential/credential.go:14.40,20.2 2 3
+github.com/weeb-vip/user/internal/services/credential/credential.go:22.128,24.16 2 4
+github.com/weeb-vip/user/internal/services/credential/credential.go:27.2,27.87 1 4
+github.com/weeb-vip/user/internal/services/credential/credential.go:24.16,26.3 1 0
+github.com/weeb-vip/user/internal/services/credential/credential.go:31.103,33.16 2 2
+github.com/weeb-vip/user/internal/services/credential/credential.go:37.2,37.57 1 2
+github.com/weeb-vip/user/internal/services/credential/credential.go:41.2,41.12 1 1
+github.com/weeb-vip/user/internal/services/credential/credential.go:33.16,35.3 1 0
+github.com/weeb-vip/user/internal/services/credential/credential.go:37.57,39.3 1 1
+github.com/weeb-vip/user/internal/services/credential/hashing.go:13.81,15.16 2 4
+github.com/weeb-vip/user/internal/services/credential/hashing.go:19.2,19.26 1 4
+github.com/weeb-vip/user/internal/services/credential/hashing.go:15.16,17.3 1 0
+github.com/weeb-vip/user/internal/services/credential/hashing.go:22.78,26.2 2 2

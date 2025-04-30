@@ -1,0 +1,34 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  web:
+    build:
+      context: user
+      dockerfile: Dockerfile.local
+    command: "/bin/sh -c 'air server start'"
+    ports:
+      - "8080:8080"
+    environment:
+      APP_ENV: docker
+    volumes:
+      - .:/app
+    networks:
+      vps_network:
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:13
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_MULTIPLE_DATABASES=auth,user
+    volumes:
+      - 'postgres_db:/var/lib/postgresql/data/'
+      - '.db_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql'
+    networks:
+      vps_network:
+volumes:
+  postgres_db:
+
+networks:
+  vps_network:

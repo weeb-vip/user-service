@@ -1,0 +1,15 @@
+{
+  "dbconfig": {
+    "host": "postgres",
+    "user": "postgres",
+    "password": "mysecretpassword",
+    "db": "user",
+    "port": "5432"
+  },
+  "snsconfig": {
+    "forgotpasswordtopic": "forgotpassword",
+    "refreshtokenexpiredtopic": "refreshtokenexpired",
+    "registrationcompletetopic": "registrationcomplete",
+    "userloggedintopic": "userloggedin"
+  }
+}
