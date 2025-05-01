@@ -13,7 +13,6 @@ type Config struct {
 	APPConfig          AppConfig
 	DBConfig           DBConfig
 	RefreshTokenConfig RefreshTokenConfig
-	SNSConfig          SNSConfig
 }
 
 type AppConfig struct {
@@ -37,13 +36,6 @@ type DBConfig struct {
 
 type RefreshTokenConfig struct {
 	TokenTTL int `env:"CONFIG__REFRESH_TOKEN_CONFIG__TOKEN_TTL" default:"4380"` // 6 months in hours.
-}
-
-type SNSConfig struct {
-	ForgotPasswordTopic       string `env:"CONFIG__SNS_FORGOT_PASS_TOPIC" required:"true"`
-	RefreshTokenExpiredTopic  string `env:"CONFIG__SNS_REFRESH_TOKEN_EXPIRED_TOPIC" required:"true"`
-	RegistrationCompleteTopic string `env:"CONFIG__SNS_REGISTRATION_COMPLETE_TOPIC" required:"true"`
-	UserLoggedInTopic         string `env:"CONFIG__SNS_USER_LOGGED_IN_TOPIC" required:"true"`
 }
 
 func LoadConfig() (*Config, error) {
