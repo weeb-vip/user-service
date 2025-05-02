@@ -9,11 +9,24 @@ import (
 	"github.com/weeb-vip/user/graph/model"
 )
 
-func AddUser( // nolint
+func CreateUser( // nolint
 	ctx context.Context,
 	userService users.User,
-	input *model.AddUserInput,
+	input *model.CreateUserInput,
 ) (*model.User, error) {
+	log := logger.FromContext(ctx)
+	req := requestinfo.FromContext(ctx)
+
+	userID := req.UserID
+	if userID == nil {
+		log.Error("User ID is missing")
+		return nil, nil
+	}
+
+	if input.ID != *userID {
+		log.Error("User ID does not match, unauthenticated")
+		return nil, nil
+	}
 	language := input.Language.String()
 	createdUser, err := userService.AddUser(ctx, input.ID, input.Username, input.Firstname, input.Lastname, language)
 

@@ -12,7 +12,7 @@ type User @key(fields: "id") {
     email: String
 }
 
-input AddUserInput {
+input CreateUserInput {
     id: String!
     firstname: String!
     lastname: String!

@@ -7,6 +7,6 @@ type Query {
 }
 
 type Mutation {
-    AddUser(input: AddUserInput!): User!
-    UpdateUserDetails(input: UpdateUserInput!): User!
+    CreatUser(input: CreateUserInput!): User! @Authenticated
+    UpdateUserDetails(input: UpdateUserInput!): User! @Authenticated
 }

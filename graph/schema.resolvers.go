@@ -12,9 +12,9 @@ import (
 	"github.com/weeb-vip/user/internal/resolvers"
 )
 
-// AddUser is the resolver for the AddUser field.
-func (r *mutationResolver) AddUser(ctx context.Context, input model.AddUserInput) (*model.User, error) {
-	return resolvers.AddUser(ctx, r.UserService, &input)
+// CreatUser is the resolver for the CreatUser field.
+func (r *mutationResolver) CreatUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
+	return resolvers.CreateUser(ctx, r.UserService, &input)
 }
 
 // UpdateUserDetails is the resolver for the UpdateUserDetails field.
