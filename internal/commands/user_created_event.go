@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"github.com/weeb-vip/user"
 	"github.com/weeb-vip/user/handlers"
 
 	"github.com/spf13/cobra"
@@ -20,7 +19,7 @@ func configureUserCreatedEventCommand(rootCmd *cobra.Command) {
 	}
 
 	rootCmd.AddCommand(eventingCmd)
-	serverCmd.AddCommand(userCreatedStartCmd)
+	eventingCmd.AddCommand(userCreatedStartCmd)
 }
 
 func startUserCreatedEventing(cmd *cobra.Command, args []string) error {
