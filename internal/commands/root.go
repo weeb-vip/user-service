@@ -16,6 +16,7 @@ func Execute() {
 
 	configureServerCommand(rootCmd)
 	configureMigrateCommand(rootCmd)
+	configureUserCreatedEventCommand(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		rootCmd.PrintErr(err)
