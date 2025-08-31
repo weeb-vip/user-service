@@ -13,6 +13,7 @@ type Config struct {
 	APPConfig          AppConfig
 	DBConfig           DBConfig
 	RefreshTokenConfig RefreshTokenConfig
+	KafkaConfig        KafkaConfig
 }
 
 type AppConfig struct {
@@ -36,6 +37,14 @@ type DBConfig struct {
 
 type RefreshTokenConfig struct {
 	TokenTTL int `env:"CONFIG__REFRESH_TOKEN_CONFIG__TOKEN_TTL" default:"4380"` // 6 months in hours.
+}
+
+type KafkaConfig struct {
+	ConsumerGroupName string `default:"user-service-group" env:"KAFKA_CONSUMER_GROUP_NAME"`
+	BootstrapServers  string `default:"localhost:9092" env:"KAFKA_BOOTSTRAP_SERVERS"`
+	Offset            string `default:"earliest" env:"KAFKA_OFFSET"`
+	Topic             string `default:"user-created" env:"KAFKA_TOPIC"`
+	ProducerTopic     string `default:"nil" env:"KAFKA_PRODUCER_TOPIC"`
 }
 
 func LoadConfig() (*Config, error) {
