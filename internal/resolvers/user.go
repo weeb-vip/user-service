@@ -2,9 +2,10 @@ package resolvers
 
 import (
 	"context"
-	"github.com/weeb-vip/user/http/handlers/logger"
 	"github.com/weeb-vip/user/http/handlers/requestinfo"
+	"github.com/weeb-vip/user/internal/logger"
 	"github.com/weeb-vip/user/internal/services/users"
+	"go.uber.org/zap"
 
 	"github.com/weeb-vip/user/graph/model"
 )
@@ -14,7 +15,7 @@ func CreateUser( // nolint
 	userService users.User,
 	input *model.CreateUserInput,
 ) (*model.User, error) {
-	log := logger.FromContext(ctx)
+	log := logger.FromCtx(ctx)
 	req := requestinfo.FromContext(ctx)
 
 	userID := req.UserID
@@ -43,7 +44,7 @@ func GetUser( // nolint
 	ctx context.Context,
 	userService users.User,
 ) (*model.User, error) {
-	log := logger.FromContext(ctx)
+	log := logger.FromCtx(ctx)
 	req := requestinfo.FromContext(ctx)
 
 	userID := req.UserID
@@ -52,7 +53,7 @@ func GetUser( // nolint
 		return nil, nil
 	}
 
-	log.Info(&userID)
+	log.Info("Fetching user with ID: ", zap.Any("userid", *userID))
 	user, err := userService.GetUserDetails(ctx, *userID)
 
 	if err != nil {
@@ -77,7 +78,7 @@ func UpdateUser( // nolint
 	userService users.User,
 	input *model.UpdateUserInput,
 ) (*model.User, error) {
-	log := logger.FromContext(ctx)
+	log := logger.FromCtx(ctx)
 	req := requestinfo.FromContext(ctx)
 
 	userID := req.UserID
@@ -87,8 +88,8 @@ func UpdateUser( // nolint
 		language = new(string)
 		*language = input.Language.String()
 	}
-	log.Info(&userID)
-	log.Info(language)
+	log.Info("User ID from context: ", zap.Any("userid", userID))
+	log.Info("language: ", zap.Any("language", language))
 	updatedUser, err := userService.UpdateUser(ctx, *userID, input.Username, input.Firstname, input.Lastname, language, input.Email)
 
 	if err != nil {
