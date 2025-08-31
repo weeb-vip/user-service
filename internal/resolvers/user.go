@@ -40,6 +40,24 @@ func CreateUser( // nolint
 	}, nil
 }
 
+func CreateUserFromEvent( // nolint
+	ctx context.Context,
+	userService users.User,
+	input *model.CreateUserInput,
+) (*model.User, error) {
+
+	language := input.Language.String()
+	createdUser, err := userService.AddUser(ctx, input.ID, input.Username, input.Firstname, input.Lastname, language)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.User{
+		ID: createdUser.ID,
+	}, nil
+}
+
 func GetUser( // nolint
 	ctx context.Context,
 	userService users.User,

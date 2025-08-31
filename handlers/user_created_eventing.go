@@ -81,12 +81,12 @@ func process(ctx context.Context, data event.Event[*kafka.Message, Payload]) (ev
 		// skip, will always fail
 		return data, nil
 	}
-	_, err := resolvers.CreateUser(ctx, users.NewUserService(), &model.CreateUserInput{
+	_, err := resolvers.CreateUserFromEvent(ctx, users.NewUserService(), &model.CreateUserInput{
 		ID:        data.Payload.UserID,
 		Firstname: "",
 		Lastname:  "",
 		Username:  "",
-		Language:  "",
+		Language:  "EN",
 		Email:     &data.Payload.Email,
 	})
 
