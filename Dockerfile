@@ -13,11 +13,12 @@ RUN apt-get update && apt-get install -y \
     librdkafka-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go mod download
-
 # Copy the source from the current directory to the Working Directory inside the container
 COPY . .
+
+RUN make generate
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
 
 # Build the Go app
 RUN CGO_ENABLED=1 GOOS=linux go build -ldflags '-linkmode external -extldflags "-static"' -a -installsuffix cgo -o main ./cmd/cli
