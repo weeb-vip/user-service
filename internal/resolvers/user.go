@@ -2,12 +2,12 @@ package resolvers
 
 import (
 	"context"
-	"github.com/weeb-vip/user/http/handlers/requestinfo"
-	"github.com/weeb-vip/user/internal/logger"
-	"github.com/weeb-vip/user/internal/services/users"
+	"github.com/weeb-vip/user-service/http/handlers/requestinfo"
+	"github.com/weeb-vip/user-service/internal/logger"
+	"github.com/weeb-vip/user-service/internal/services/users"
 	"go.uber.org/zap"
 
-	"github.com/weeb-vip/user/graph/model"
+	"github.com/weeb-vip/user-service/graph/model"
 )
 
 func CreateUser( // nolint
@@ -82,12 +82,13 @@ func GetUser( // nolint
 	language := model.Language(user.Language)
 
 	return &model.User{
-		ID:        user.ID,
-		Firstname: user.FirstName,
-		Lastname:  user.LastName,
-		Username:  user.Username,
-		Language:  language,
-		Email:     user.Email,
+		ID:              user.ID,
+		Firstname:       user.FirstName,
+		Lastname:        user.LastName,
+		Username:        user.Username,
+		Language:        language,
+		Email:           user.Email,
+		ProfileImageURL: user.ProfileImageURL,
 	}, nil
 }
 
@@ -119,11 +120,12 @@ func UpdateUser( // nolint
 		userLanguage = model.Language(updatedUser.Language)
 	}
 	return &model.User{
-		ID:        updatedUser.ID,
-		Firstname: updatedUser.FirstName,
-		Lastname:  updatedUser.LastName,
-		Username:  updatedUser.Username,
-		Language:  userLanguage,
-		Email:     updatedUser.Email,
+		ID:              updatedUser.ID,
+		Firstname:       updatedUser.FirstName,
+		Lastname:        updatedUser.LastName,
+		Username:        updatedUser.Username,
+		Language:        userLanguage,
+		Email:           updatedUser.Email,
+		ProfileImageURL: updatedUser.ProfileImageURL,
 	}, nil
 }

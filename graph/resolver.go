@@ -1,9 +1,10 @@
 package graph
 
 import (
-	"github.com/weeb-vip/user/config"
-	"github.com/weeb-vip/user/internal/jwt"
-	"github.com/weeb-vip/user/internal/services/users"
+	"github.com/weeb-vip/user-service/config"
+	"github.com/weeb-vip/user-service/internal/jwt"
+	"github.com/weeb-vip/user-service/internal/services/image"
+	"github.com/weeb-vip/user-service/internal/services/users"
 )
 
 // This file will not be regenerated automatically.
@@ -14,4 +15,5 @@ type Resolver struct {
 	UserService  users.User
 	JwtTokenizer jwt.Tokenizer
 	Config       config.Config
+	ImageService *image.ImageService
 }

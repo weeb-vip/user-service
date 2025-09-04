@@ -2,6 +2,8 @@
 #
 # https://gqlgen.com/getting-started/
 
+scalar Upload
+
 type Query {
     UserDetails: User! @Authenticated
 }
@@ -9,4 +11,5 @@ type Query {
 type Mutation {
     CreatUser(input: CreateUserInput!): User! @Authenticated
     UpdateUserDetails(input: UpdateUserInput!): User! @Authenticated
+    UploadProfileImage(image: Upload!): User! @Authenticated
 }

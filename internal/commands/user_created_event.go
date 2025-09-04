@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/weeb-vip/user/handlers"
+	"github.com/weeb-vip/user-service/handlers"
 
 	"github.com/spf13/cobra"
 )

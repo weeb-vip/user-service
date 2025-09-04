@@ -10,4 +10,19 @@ migrate:
 mocks:
 	go get github.com/golang/mock/mockgen/model
 	go install github.com/golang/mock/mockgen@v1.6.0
-	mockgen -destination=./mocks/mock_users.go -package=mocks github.com/weeb-vip/user/internal/services/users User
+	mockgen -destination=./mocks/mock_users.go -package=mocks github.com/weeb-vip/user-service/internal/services/users User
+
+test:
+	go test ./...
+
+test-coverage:
+	go test -cover ./...
+
+test-integration:
+	cd integration-tests && INTEGRATION_TESTS=true go test -v ./...
+
+test-integration-short:
+	cd integration-tests && INTEGRATION_TESTS=true go test -v -short ./...
+
+clean-docker:
+	docker-compose -p user-service-integration down -v --remove-orphans

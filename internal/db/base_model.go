@@ -7,8 +7,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/weeb-vip/user/internal/snake_case"
-	"github.com/weeb-vip/user/internal/ulid"
+	"github.com/weeb-vip/user-service/internal/snake_case"
+	"github.com/weeb-vip/user-service/internal/ulid"
 )
 
 type BaseModel struct {

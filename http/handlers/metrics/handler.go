@@ -3,7 +3,7 @@ package metrics
 import (
 	"net/http"
 
-	"github.com/weeb-vip/user/internal/measurements"
+	"github.com/weeb-vip/user-service/internal/measurements"
 )
 
 // Handler tracks metrics about query.

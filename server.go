@@ -8,11 +8,11 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/rs/cors"
-	"github.com/weeb-vip/user/config"
-	"github.com/weeb-vip/user/http/handlers"
-	"github.com/weeb-vip/user/internal/jwt"
-	"github.com/weeb-vip/user/internal/keypair"
-	"github.com/weeb-vip/user/internal/publishkey"
+	"github.com/weeb-vip/user-service/config"
+	"github.com/weeb-vip/user-service/http/handlers"
+	"github.com/weeb-vip/user-service/internal/jwt"
+	"github.com/weeb-vip/user-service/internal/keypair"
+	"github.com/weeb-vip/user-service/internal/publishkey"
 
 	"github.com/99designs/gqlgen/graphql/playground"
 )

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/weeb-vip/user/internal/jwt"
-	"github.com/weeb-vip/user/internal/keypair"
+	"github.com/weeb-vip/user-service/internal/jwt"
+	"github.com/weeb-vip/user-service/internal/keypair"
 )
 
 type mockSigningKeyStruct struct {

@@ -10,6 +10,7 @@ type User @key(fields: "id") {
     username: String!
     language: Language!
     email: String
+    profileImageUrl: String
 }
 
 input CreateUserInput {
@@ -27,4 +28,5 @@ input UpdateUserInput {
     username: String
     email: String
     language: Language
+    profileImageUrl: String
 }

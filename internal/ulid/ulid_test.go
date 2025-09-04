@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/weeb-vip/user/internal/ulid"
+	"github.com/weeb-vip/user-service/internal/ulid"
 )
 
 func TestNew(t *testing.T) {

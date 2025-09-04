@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/weeb-vip/user/http/handlers/requestinfo"
+	"github.com/weeb-vip/user-service/http/handlers/requestinfo"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -15,6 +15,7 @@ services:
       vps_network:
     depends_on:
       - postgres
+      - minio
   postgres:
     image: postgres:13
     ports:
@@ -27,8 +28,29 @@ services:
       - '.db_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql'
     networks:
       vps_network:
+  
+  minio:
+    image: minio/minio:latest
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio123
+    command: server /data --console-address ":9001"
+    volumes:
+      - 'minio_data:/data'
+    networks:
+      vps_network:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
 volumes:
   postgres_db:
+  minio_data:
 
 networks:
   vps_network:

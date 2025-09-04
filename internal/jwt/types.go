@@ -3,7 +3,7 @@ package jwt
 import (
 	"time"
 
-	"github.com/weeb-vip/user/internal/keypair"
+	"github.com/weeb-vip/user-service/internal/keypair"
 )
 
 type tokenizer struct {

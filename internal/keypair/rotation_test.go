@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/weeb-vip/user/internal/keypair"
+	"github.com/weeb-vip/user-service/internal/keypair"
 )
 
 func getIDGenerator(id string, err error) keypair.PublicKeyIDGenerator {

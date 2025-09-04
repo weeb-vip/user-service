@@ -6,8 +6,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/weeb-vip/user/internal/db"
-	"github.com/weeb-vip/user/internal/services/users/models"
+	"github.com/weeb-vip/user-service/internal/db"
+	"github.com/weeb-vip/user-service/internal/services/users/models"
 )
 
 type UsersRepository interface {
@@ -22,6 +22,7 @@ type UsersRepository interface {
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 	GetUserById(ctx context.Context, id string) (*models.User, error)
 	UpdateUser(ctx context.Context, id string, username *string, firstName *string, lastName *string, language *string, email *string) (*models.User, error)
+	UpdateProfileImageURL(ctx context.Context, id string, profileImageURL string) (*models.User, error)
 	DeleteUser(ctx context.Context, username string) error
 }
 
@@ -135,6 +136,33 @@ func (repository *userRepository) UpdateUser(
 	if email != nil {
 		user.Email = email
 	}
+
+	err = database.WithContext(ctx).Save(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// get updated user
+	return repository.GetUserById(ctx, id)
+}
+
+func (repository *userRepository) UpdateProfileImageURL(
+	ctx context.Context,
+	id string,
+	profileImageURL string,
+) (*models.User, error) {
+	database := repository.DBService.GetDB()
+
+	user, err := repository.GetUserById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	user.ProfileImageURL = &profileImageURL
 
 	err = database.WithContext(ctx).Save(&user).Error
 	if err != nil {

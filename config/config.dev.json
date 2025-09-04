@@ -1,10 +1,10 @@
 {
   "dbconfig": {
     "host": "localhost",
-    "user": "postgres",
+    "user": "weeb",
     "password": "mysecretpassword",
-    "db": "users",
-    "port": "5432"
+    "db": "weeb",
+    "port": 3306
   },
   "AppConfig": {
     "KeyRollingDurationInHours": 1
@@ -14,5 +14,12 @@
     "refreshtokenexpiredtopic": "refreshtokenexpired",
     "registrationcompletetopic": "registrationcomplete",
     "userloggedintopic": "userloggedin"
+  },
+  "minioconfig": {
+    "endpoint": "localhost:9000",
+    "accesskeyid": "minio",
+    "secretaccesskey": "minio123",
+    "usessl": false,
+    "bucket": "anime"
   }
 }

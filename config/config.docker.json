@@ -1,15 +1,22 @@
 {
   "dbconfig": {
-    "host": "postgres",
-    "user": "postgres",
+    "host": "localhost",
+    "user": "weeb",
     "password": "mysecretpassword",
-    "db": "user",
-    "port": "5432"
+    "db": "weeb",
+    "port": 3306
   },
   "snsconfig": {
     "forgotpasswordtopic": "forgotpassword",
     "refreshtokenexpiredtopic": "refreshtokenexpired",
     "registrationcompletetopic": "registrationcomplete",
     "userloggedintopic": "userloggedin"
+  },
+  "minioconfig": {
+    "endpoint": "localhost:9000",
+    "accesskeyid": "minio",
+    "secretaccesskey": "minio123",
+    "usessl": false,
+    "bucket": "anime"
   }
 }

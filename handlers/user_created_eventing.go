@@ -8,11 +8,11 @@ import (
 	"github.com/ThatCatDev/ep/v2/middlewares/kafka/backoffretry"
 	"github.com/ThatCatDev/ep/v2/processor"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	"github.com/weeb-vip/user/config"
-	"github.com/weeb-vip/user/graph/model"
-	"github.com/weeb-vip/user/internal/logger"
-	"github.com/weeb-vip/user/internal/resolvers"
-	"github.com/weeb-vip/user/internal/services/users"
+	"github.com/weeb-vip/user-service/config"
+	"github.com/weeb-vip/user-service/graph/model"
+	"github.com/weeb-vip/user-service/internal/logger"
+	"github.com/weeb-vip/user-service/internal/resolvers"
+	"github.com/weeb-vip/user-service/internal/services/users"
 	"go.uber.org/zap"
 )
 

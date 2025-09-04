@@ -3,12 +3,12 @@ package commands
 import (
 	"errors"
 
-	"github.com/weeb-vip/user/config"
+	"github.com/weeb-vip/user-service/config"
 
 	"github.com/golang-migrate/migrate/v4"
 
-	"github.com/weeb-vip/user/internal/db"
-	"github.com/weeb-vip/user/internal/migrations"
+	"github.com/weeb-vip/user-service/internal/db"
+	"github.com/weeb-vip/user-service/internal/migrations"
 
 	"github.com/spf13/cobra"
 )

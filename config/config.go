@@ -14,6 +14,7 @@ type Config struct {
 	DBConfig           DBConfig
 	RefreshTokenConfig RefreshTokenConfig
 	KafkaConfig        KafkaConfig
+	MinioConfig        MinioConfig
 }
 
 type AppConfig struct {
@@ -45,6 +46,14 @@ type KafkaConfig struct {
 	Offset            string `default:"earliest" env:"KAFKA_OFFSET"`
 	Topic             string `default:"user-created" env:"KAFKA_TOPIC"`
 	ProducerTopic     string `default:"nil" env:"KAFKA_PRODUCER_TOPIC"`
+}
+
+type MinioConfig struct {
+	Endpoint        string `default:"localhost:9000" env:"MINIO_ENDPOINT"`
+	AccessKeyID     string `default:"minio" env:"MINIO_ACCESS_KEY_ID"`
+	SecretAccessKey string `default:"minio123" env:"MINIO_SECRET_ACCESS_KEY"`
+	UseSSL          bool   `default:"false" env:"MINIO_USESSL"`
+	Bucket          string `default:"anime" env:"MINIO_BUCKET"`
 }
 
 func LoadConfig() (*Config, error) {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/weeb-vip/user/internal/commands"
+	"github.com/weeb-vip/user-service/internal/commands"
 )
 
 func main() {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/weeb-vip/user/internal/keypair"
+	"github.com/weeb-vip/user-service/internal/keypair"
 )
 
 func TestGenerateKeyPair(t *testing.T) {

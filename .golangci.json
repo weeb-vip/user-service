@@ -142,7 +142,7 @@
       "capital": true
     },
     "goimports": {
-      "local-prefixes": "github.com/weeb-vip/user"
+      "local-prefixes": "github.com/weeb-vip/user-service"
     },
     "gosimple": {
       "go": "1.18",

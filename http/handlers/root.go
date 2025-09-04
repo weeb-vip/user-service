@@ -8,17 +8,20 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/apollotracing"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/sirupsen/logrus"
 
-	"github.com/weeb-vip/user/config"
-	"github.com/weeb-vip/user/graph"
-	"github.com/weeb-vip/user/graph/generated"
-	"github.com/weeb-vip/user/http/handlers/logger"
-	"github.com/weeb-vip/user/http/handlers/metrics"
-	"github.com/weeb-vip/user/http/handlers/requestinfo"
-	"github.com/weeb-vip/user/internal/jwt"
-	"github.com/weeb-vip/user/internal/measurements"
-	"github.com/weeb-vip/user/internal/services/users"
+	"github.com/weeb-vip/user-service/config"
+	"github.com/weeb-vip/user-service/graph"
+	"github.com/weeb-vip/user-service/graph/generated"
+	"github.com/weeb-vip/user-service/http/handlers/logger"
+	"github.com/weeb-vip/user-service/http/handlers/metrics"
+	"github.com/weeb-vip/user-service/http/handlers/requestinfo"
+	"github.com/weeb-vip/user-service/internal/jwt"
+	"github.com/weeb-vip/user-service/internal/measurements"
+	"github.com/weeb-vip/user-service/internal/services/image"
+	"github.com/weeb-vip/user-service/internal/services/users"
+	"github.com/weeb-vip/user-service/internal/storage/minio"
 )
 
 func BuildRootHandler(tokenizer jwt.Tokenizer) http.Handler { // nolint
@@ -30,10 +33,16 @@ func BuildRootHandler(tokenizer jwt.Tokenizer) http.Handler { // nolint
 	}
 
 	userService := users.NewUserService()
+	
+	// Initialize MinIO storage
+	minioStorage := minio.NewMinioStorage(conf.MinioConfig)
+	imageService := image.NewImageService(minioStorage)
+	
 	resolvers := &graph.Resolver{
 		UserService:  userService,
 		JwtTokenizer: tokenizer,
 		Config:       *conf,
+		ImageService: imageService,
 	}
 	cfg := generated.Config{Resolvers: resolvers}
 	cfg.Directives.Authenticated = func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {
@@ -48,6 +57,12 @@ func BuildRootHandler(tokenizer jwt.Tokenizer) http.Handler { // nolint
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(cfg))
 	srv.Use(apollotracing.Tracer{})
+	
+	// Add multipart form support for file uploads
+	srv.AddTransport(transport.MultipartForm{
+		MaxUploadSize: 10 << 20, // 10 MB
+		MaxMemory:     10 << 20, // 10 MB
+	})
 
 	client := measurements.New()
 

@@ -3,7 +3,7 @@ package keypair
 import (
 	"time"
 
-	"github.com/weeb-vip/user/internal/container"
+	"github.com/weeb-vip/user-service/internal/container"
 )
 
 type PublicKeyIDGenerator func(publicKey string) (string, error)

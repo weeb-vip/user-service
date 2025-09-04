@@ -2,7 +2,7 @@ package users_test
 
 import (
 	"context"
-	"github.com/weeb-vip/user/internal/services/users"
+	"github.com/weeb-vip/user-service/internal/services/users"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

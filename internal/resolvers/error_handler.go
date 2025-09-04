@@ -3,13 +3,13 @@ package resolvers
 import (
 	"context"
 	"errors"
-	"github.com/weeb-vip/user/internal/services/users"
+	"github.com/weeb-vip/user-service/internal/services/users"
 	"log"
 
 	"github.com/99designs/gqlgen/graphql"
 
-	"github.com/weeb-vip/user/internal/entities"
-	"github.com/weeb-vip/user/internal/xerrors"
+	"github.com/weeb-vip/user-service/internal/entities"
+	"github.com/weeb-vip/user-service/internal/xerrors"
 )
 
 func handleError(ctx context.Context, result interface{}, err error) (interface{}, error) { //nolint

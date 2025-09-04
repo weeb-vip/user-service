@@ -3,8 +3,8 @@ package users
 import (
 	"context"
 
-	"github.com/weeb-vip/user/internal/services/users/models"
-	"github.com/weeb-vip/user/internal/services/users/repositories"
+	"github.com/weeb-vip/user-service/internal/services/users/models"
+	"github.com/weeb-vip/user-service/internal/services/users/repositories"
 )
 
 type usersService struct {
@@ -86,5 +86,27 @@ func (service *usersService) UpdateUser(
 	email *string,
 ) (*models.User, error) {
 	return service.usersRepository.UpdateUser(ctx, id, username, firstName, lastName, language, email)
+}
 
+func (service *usersService) UpdateProfileImageURL(
+	ctx context.Context,
+	id string,
+	profileImageURL string,
+) (*models.User, error) {
+	user, err := service.usersRepository.GetUserById(ctx, id)
+	if err != nil {
+		return nil, &Error{
+			Code:    UserErrorInternalError,
+			Message: "database error",
+		}
+	}
+
+	if user == nil {
+		return nil, &Error{
+			Code:    UserErrorInvalidUsers,
+			Message: "user not found",
+		}
+	}
+
+	return service.usersRepository.UpdateProfileImageURL(ctx, id, profileImageURL)
 }

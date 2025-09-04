@@ -2,10 +2,11 @@ package db
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
-	"github.com/weeb-vip/user/config"
+	"github.com/weeb-vip/user-service/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -45,7 +46,7 @@ func (service *Service) setupSQLDB(db *gorm.DB) {
 }
 
 func (service *Service) connect(cfg config.DBConfig) *gorm.DB {
-
+	log.Println("Connecting to database...", cfg.Host, cfg.Port, cfg.DB)
 	db, err := gorm.Open(mysql.Open(fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=%s&interpolateParams=true", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DB, cfg.SSL)), &gorm.Config{})
 
 	if err != nil {
