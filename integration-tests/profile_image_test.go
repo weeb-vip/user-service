@@ -5,6 +5,7 @@ package integration_tests
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 
@@ -61,6 +62,14 @@ func TestProfileImageUpload_Integration(t *testing.T) {
 	t.Run("UploadProfileImage_MultipleFiles", func(t *testing.T) {
 		testUploadProfileImageMultipleFiles(t, client)
 	})
+
+	t.Run("UploadProfileImage_ThumbnailGeneration", func(t *testing.T) {
+		testUploadProfileImageThumbnailGeneration(t, client)
+	})
+
+	t.Run("UploadProfileImage_GifConversion", func(t *testing.T) {
+		testUploadProfileImageGifConversion(t, client)
+	})
 }
 
 func testUploadProfileImageSuccess(t *testing.T, client *GraphQLClient) {
@@ -68,9 +77,21 @@ func testUploadProfileImageSuccess(t *testing.T, client *GraphQLClient) {
 	testUser := client.CreateTestUser(t, "user_integration_test")
 	t.Logf("Created test user: %s", testUser.ID)
 
-	// Test uploading a valid image file
+	// Load the real test image file
+	imagePath := "test-profile.jpg" // File is in the same directory as the test
+	imageFile, err := os.Open(imagePath)
+	if err != nil {
+		t.Fatalf("Failed to open test image file: %v", err)
+	}
+	defer imageFile.Close()
+
+	imageBytes, err := io.ReadAll(imageFile)
+	if err != nil {
+		t.Fatalf("Failed to read test image file: %v", err)
+	}
+
 	fileName := "test-profile.jpg"
-	fileContent := "fake jpg content for integration test"
+	fileContent := string(imageBytes)
 
 	user := client.UploadProfileImage(t, fileName, fileContent)
 
@@ -198,6 +219,77 @@ func testUploadProfileImageMultipleFiles(t *testing.T, client *GraphQLClient) {
 	}
 
 	t.Logf("Successfully verified %d upload paths with replacement logic", len(uploadedPaths))
+}
+
+func testUploadProfileImageThumbnailGeneration(t *testing.T, client *GraphQLClient) {
+	// Create a test user first
+	testUser := client.CreateTestUser(t, "user_integration_test")
+	t.Logf("Created test user for thumbnail test: %s", testUser.ID)
+
+	// Load the real test image file
+	imagePath := "test-profile.jpg" // File is in the same directory as the test
+	imageFile, err := os.Open(imagePath)
+	if err != nil {
+		t.Fatalf("Failed to open test image file: %v", err)
+	}
+	defer imageFile.Close()
+
+	imageBytes, err := io.ReadAll(imageFile)
+	if err != nil {
+		t.Fatalf("Failed to read test image file: %v", err)
+	}
+
+	fileName := "test-profile.jpg"
+	fileContent := string(imageBytes)
+
+	user := client.UploadProfileImage(t, fileName, fileContent)
+
+	// Verify the response
+	assert.NotEmpty(t, user.ID)
+	assert.NotNil(t, user.ProfileImageURL)
+	assert.NotEmpty(t, *user.ProfileImageURL)
+	assert.Contains(t, *user.ProfileImageURL, "profiles/")
+	assert.Contains(t, *user.ProfileImageURL, ".jpg")
+
+	// This should successfully generate thumbnails since we're using real image data
+	t.Logf("Successfully uploaded real image with thumbnails: %s", *user.ProfileImageURL)
+}
+
+func testUploadProfileImageGifConversion(t *testing.T, client *GraphQLClient) {
+	// Create a test user first
+	testUser := client.CreateTestUser(t, "user_integration_test")
+	t.Logf("Created test user for GIF conversion test: %s", testUser.ID)
+
+	// Load the real GIF file
+	gifPath := "cat-smile.gif" // File is in the same directory as the test
+	gifFile, err := os.Open(gifPath)
+	if err != nil {
+		t.Fatalf("Failed to open test GIF file: %v", err)
+	}
+	defer gifFile.Close()
+
+	gifBytes, err := io.ReadAll(gifFile)
+	if err != nil {
+		t.Fatalf("Failed to read test GIF file: %v", err)
+	}
+
+	fileName := "cat-smile.gif"
+	fileContent := string(gifBytes)
+
+	user := client.UploadProfileImage(t, fileName, fileContent)
+
+	// Verify the response
+	assert.NotEmpty(t, user.ID)
+	assert.NotNil(t, user.ProfileImageURL)
+	assert.NotEmpty(t, *user.ProfileImageURL)
+	assert.Contains(t, *user.ProfileImageURL, "profiles/")
+	
+	// The key test: GIF should be converted to PNG
+	assert.Contains(t, *user.ProfileImageURL, ".png", "GIF should be converted to PNG")
+	assert.NotContains(t, *user.ProfileImageURL, ".gif", "Should not save as GIF")
+
+	// This should successfully generate PNG thumbnails from the GIF conversion
+	t.Logf("Successfully uploaded GIF converted to PNG with thumbnails: %s", *user.ProfileImageURL)
 }
 
 // TestUserWorkflow_Integration tests a complete user workflow including image upload

@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
 	"image/gif"
+	"image/jpeg"
 	"image/png"
 	"io"
 	"path/filepath"
@@ -13,6 +15,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/weeb-vip/user-service/internal/storage"
+	"golang.org/x/image/draw"
 )
 
 type ImageService struct {
@@ -63,16 +66,27 @@ func (s *ImageService) UploadProfileImage(ctx context.Context, userID string, fi
 	timestamp := time.Now().Format("20060102150405.000")
 	// Replace dots in timestamp to avoid issues with file extensions
 	timestamp = strings.ReplaceAll(timestamp, ".", "")
-	filename := fmt.Sprintf("profiles/%s/profile_%s%s", userID, timestamp, processedExt)
+	
+	// Get base filename without extension for creating multiple versions
+	baseFilename := fmt.Sprintf("profiles/%s/profile_%s", userID, timestamp)
+	originalFilename := baseFilename + processedExt
 
-	// Upload to MinIO
-	err = s.storage.Put(ctx, processedData, filename)
+	// Upload original image
+	err = s.storage.Put(ctx, processedData, originalFilename)
 	if err != nil {
-		return "", fmt.Errorf("failed to upload to storage: %w", err)
+		return "", fmt.Errorf("failed to upload original image to storage: %w", err)
 	}
 
-	// Return the path (URL will be constructed based on your MinIO configuration)
-	return filename, nil
+	// Generate and upload thumbnails
+	err = s.generateAndUploadThumbnails(ctx, processedData, baseFilename, processedExt)
+	if err != nil {
+		// If thumbnail generation fails, delete the original and return error
+		_ = s.storage.Delete(ctx, originalFilename)
+		return "", fmt.Errorf("failed to generate thumbnails: %w", err)
+	}
+
+	// Return the original image path
+	return originalFilename, nil
 }
 
 // processImage handles image processing, converting GIFs to still images
@@ -113,15 +127,115 @@ func (s *ImageService) convertGifToStill(gifData []byte) ([]byte, string, error)
 	return buf.Bytes(), ".png", nil
 }
 
+// generateAndUploadThumbnails creates 32x32 and 64x64 thumbnails and uploads them
+func (s *ImageService) generateAndUploadThumbnails(ctx context.Context, imageData []byte, baseFilename, ext string) error {
+	// Decode the original image
+	img, format, err := image.Decode(bytes.NewReader(imageData))
+	if err != nil {
+		return fmt.Errorf("failed to decode image for thumbnails: %w", err)
+	}
+
+	// Generate 32x32 thumbnail
+	thumb32, err := s.resizeImage(img, 32, 32)
+	if err != nil {
+		return fmt.Errorf("failed to create 32x32 thumbnail: %w", err)
+	}
+
+	// Generate 64x64 thumbnail
+	thumb64, err := s.resizeImage(img, 64, 64)
+	if err != nil {
+		return fmt.Errorf("failed to create 64x64 thumbnail: %w", err)
+	}
+
+	// Encode and upload 32x32 thumbnail
+	thumb32Data, err := s.encodeImage(thumb32, format)
+	if err != nil {
+		return fmt.Errorf("failed to encode 32x32 thumbnail: %w", err)
+	}
+	
+	thumb32Filename := baseFilename + "_32" + ext
+	err = s.storage.Put(ctx, thumb32Data, thumb32Filename)
+	if err != nil {
+		return fmt.Errorf("failed to upload 32x32 thumbnail: %w", err)
+	}
+
+	// Encode and upload 64x64 thumbnail
+	thumb64Data, err := s.encodeImage(thumb64, format)
+	if err != nil {
+		return fmt.Errorf("failed to encode 64x64 thumbnail: %w", err)
+	}
+	
+	thumb64Filename := baseFilename + "_64" + ext
+	err = s.storage.Put(ctx, thumb64Data, thumb64Filename)
+	if err != nil {
+		// If 64x64 upload fails, try to clean up the 32x32 thumbnail
+		_ = s.storage.Delete(ctx, thumb32Filename)
+		return fmt.Errorf("failed to upload 64x64 thumbnail: %w", err)
+	}
+
+	return nil
+}
+
+// resizeImage resizes an image to the specified dimensions
+func (s *ImageService) resizeImage(src image.Image, width, height int) (image.Image, error) {
+	// Create a new image with the target size
+	dst := image.NewRGBA(image.Rect(0, 0, width, height))
+	
+	// Use BiLinear scaling for good quality thumbnails
+	draw.BiLinear.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Over, nil)
+	
+	return dst, nil
+}
+
+// encodeImage encodes an image based on the original format
+func (s *ImageService) encodeImage(img image.Image, format string) ([]byte, error) {
+	var buf bytes.Buffer
+	
+	switch format {
+	case "jpeg":
+		err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: 85})
+		if err != nil {
+			return nil, fmt.Errorf("failed to encode JPEG: %w", err)
+		}
+	case "png":
+		err := png.Encode(&buf, img)
+		if err != nil {
+			return nil, fmt.Errorf("failed to encode PNG: %w", err)
+		}
+	default:
+		// Default to PNG for other formats
+		err := png.Encode(&buf, img)
+		if err != nil {
+			return nil, fmt.Errorf("failed to encode as PNG: %w", err)
+		}
+	}
+	
+	return buf.Bytes(), nil
+}
+
 func (s *ImageService) DeleteProfileImage(ctx context.Context, imagePath string) error {
 	if imagePath == "" {
 		return nil
 	}
 
+	// Delete original image
 	err := s.storage.Delete(ctx, imagePath)
 	if err != nil {
-		return fmt.Errorf("failed to delete image from storage: %w", err)
+		return fmt.Errorf("failed to delete original image from storage: %w", err)
 	}
+
+	// Generate thumbnail paths and delete them
+	// Extract base filename and extension
+	ext := filepath.Ext(imagePath)
+	baseWithoutExt := strings.TrimSuffix(imagePath, ext)
+	
+	// Delete 32x32 thumbnail
+	thumb32Path := baseWithoutExt + "_32" + ext
+	_ = s.storage.Delete(ctx, thumb32Path) // Don't fail if thumbnail doesn't exist
+	
+	// Delete 64x64 thumbnail
+	thumb64Path := baseWithoutExt + "_64" + ext
+	_ = s.storage.Delete(ctx, thumb64Path) // Don't fail if thumbnail doesn't exist
 
 	return nil
 }
