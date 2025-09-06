@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/weeb-vip/user-service/internal/logger"
 	"go.uber.org/zap"
-	"log"
 	"net/http"
 	"time"
 
@@ -55,7 +54,7 @@ func StartServer() error { // nolint
 		w.WriteHeader(200) // nolint
 	}))
 
-	log.Printf("connect to http://localhost:%d/ for GraphQL playground", cfg.APPConfig.Port)
+	log.Info("connect to http://localhost:%d/ for GraphQL playground", zap.Int("port", cfg.APPConfig.Port))
 
 	return http.ListenAndServe(fmt.Sprintf(":%d", cfg.APPConfig.Port), router) // nolint
 }
