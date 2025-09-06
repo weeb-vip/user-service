@@ -2,6 +2,8 @@ package user
 
 import (
 	"fmt"
+	"github.com/weeb-vip/user-service/internal/logger"
+	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"time"
@@ -25,10 +27,16 @@ func StartServer() error { // nolint
 		return err
 	}
 
+	log := logger.Get()
+	log.Info("Starting server...")
+	log.Info("Loading keys...")
 	rotatingKey, err := getRotatingSigningKey(cfg)
 	if err != nil {
+		log.Error("Failed to load keys", zap.Error(err))
 		return err
 	}
+
+	log.Info("Keys loaded successfully")
 
 	router := chi.NewRouter()
 
