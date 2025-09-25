@@ -19,7 +19,9 @@ type Config struct {
 
 type AppConfig struct {
 	Name                      string `env:"CONFIG__APP_CONFIG__NAME" required:"true" default:"card-delivery-service"`
+	APPName                   string `env:"CONFIG__APP_CONFIG__APP_NAME" default:"user-service"`
 	Version                   string `env:"APP__VERSION" default:"local"`
+	Env                       string `env:"APP_ENV" default:"dev"`
 	Port                      int    `env:"CONFIG__APP_CONFIG__PORT" default:"3002"`
 	KeyRollingDurationInHours int    `env:"CONFIG__APP_CONFIG__KEY_ROLLING_DURATION_IN_HOURS" default:"1"`
 	InternalGraphQLURL        string `env:"INTERNAL_GRAPHQL_URL" default:"http://localhost:5001/graphql"`
@@ -67,6 +69,14 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+func LoadConfigOrPanic() *Config {
+	config, err := LoadConfig()
+	if err != nil {
+		panic(fmt.Sprintf("Failed to load config: %v", err))
+	}
+	return config
 }
 
 func getConfigLocation() string {

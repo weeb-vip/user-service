@@ -13,7 +13,6 @@ import (
 	"github.com/weeb-vip/user-service/internal/logger"
 	"github.com/weeb-vip/user-service/internal/resolvers"
 	"github.com/weeb-vip/user-service/internal/services/users"
-	"go.uber.org/zap"
 )
 
 type Payload struct {
@@ -22,10 +21,12 @@ type Payload struct {
 }
 
 func UserCreatedEventing() error {
+	return UserCreatedEventingWithContext(context.Background())
+}
+
+func UserCreatedEventingWithContext(ctx context.Context) error {
 	cfg, _ := config.LoadConfig()
-	ctx := context.Background()
-	log := logger.Get()
-	ctx = logger.WithCtx(ctx, log)
+	log := logger.FromCtx(ctx)
 
 	kafkaConfig := &epKafka.KafkaConfig{
 		ConsumerGroupName:        cfg.KafkaConfig.ConsumerGroupName,
@@ -44,22 +45,22 @@ func UserCreatedEventing() error {
 	defer func(driver drivers.Driver[*kafka.Message]) {
 		err := driver.Close()
 		if err != nil {
-			log.Error("Error closing Kafka driver", zap.String("error", err.Error()))
+			log.Error().Err(err).Msg("Error closing Kafka driver")
 		} else {
-			log.Info("Kafka driver closed successfully")
+			log.Info().Msg("Kafka driver closed successfully")
 		}
 	}(driver)
 
 	processorInstance := processor.NewProcessor[*kafka.Message, Payload](driver, cfg.KafkaConfig.Topic, process)
 
-	log.Info("initializing backoff retry middleware", zap.String("topic", cfg.KafkaConfig.Topic))
+	log.Info().Str("topic", cfg.KafkaConfig.Topic).Msg("initializing backoff retry middleware")
 	backoffRetryInstance := backoffretry.NewBackoffRetry[Payload](driver, backoffretry.Config{
 		MaxRetries: 3,
 		HeaderKey:  "retry",
 		RetryQueue: cfg.KafkaConfig.Topic + "-retry",
 	})
 
-	log.Info("Starting Kafka processor", zap.String("topic", cfg.KafkaConfig.Topic))
+	log.Info().Str("topic", cfg.KafkaConfig.Topic).Msg("Starting Kafka processor")
 	// create middleware to log errors and continue processing
 
 	err := processorInstance.
@@ -67,7 +68,7 @@ func UserCreatedEventing() error {
 		Run(ctx)
 
 	if err != nil && ctx.Err() == nil { // Ignore error if caused by context cancellation
-		log.Error("Error consuming messages", zap.String("error", err.Error()))
+		log.Error().Err(err).Msg("Error consuming messages")
 		return err
 	}
 
@@ -77,7 +78,7 @@ func UserCreatedEventing() error {
 func process(ctx context.Context, data event.Event[*kafka.Message, Payload]) (event.Event[*kafka.Message, Payload], error) {
 	log := logger.FromCtx(ctx)
 	if data.Payload.UserID == "" {
-		log.Error("Payload is nil")
+		log.Error().Msg("Payload is nil")
 		// skip, will always fail
 		return data, nil
 	}
@@ -91,7 +92,7 @@ func process(ctx context.Context, data event.Event[*kafka.Message, Payload]) (ev
 	})
 
 	if err != nil {
-		log.Error("Failed to create user", zap.String("error", err.Error()))
+		log.Error().Err(err).Msg("Failed to create user")
 		return data, err
 	}
 

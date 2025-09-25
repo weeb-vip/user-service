@@ -1,9 +1,9 @@
 package user
 
 import (
+	"context"
 	"fmt"
 	"github.com/weeb-vip/user-service/internal/logger"
-	"go.uber.org/zap"
 	"net/http"
 	"time"
 
@@ -21,21 +21,25 @@ import (
 const minKeyValidityDurationMinutes = 5
 
 func StartServer() error { // nolint
+	return StartServerWithContext(context.Background())
+}
+
+func StartServerWithContext(ctx context.Context) error { // nolint
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		return err
 	}
 
-	log := logger.Get()
-	log.Info("Starting server...")
-	log.Info("Loading keys...")
-	rotatingKey, err := getRotatingSigningKey(cfg)
+	log := logger.FromCtx(ctx)
+	log.Info().Msg("Starting server...")
+	log.Info().Msg("Loading keys...")
+	rotatingKey, err := getRotatingSigningKey(cfg, ctx)
 	if err != nil {
-		log.Error("Failed to load keys", zap.Error(err))
+		log.Error().Err(err).Msg("Failed to load keys")
 		return err
 	}
 
-	log.Info("Keys loaded successfully")
+	log.Info().Msg("Keys loaded successfully")
 
 	router := chi.NewRouter()
 
@@ -54,22 +58,28 @@ func StartServer() error { // nolint
 		w.WriteHeader(200) // nolint
 	}))
 
-	log.Info("connect to http://localhost:%d/ for GraphQL playground", zap.Int("port", cfg.APPConfig.Port))
+	log.Info().Int("port", cfg.APPConfig.Port).Msg("Connect to GraphQL playground")
 
 	return http.ListenAndServe(fmt.Sprintf(":%d", cfg.APPConfig.Port), router) // nolint
 }
 
-func getRotatingSigningKey(cfg *config.Config) (keypair.RotatingSigningKey, error) {
+func getRotatingSigningKey(cfg *config.Config, ctx context.Context) (keypair.RotatingSigningKey, error) {
+	log := logger.FromCtx(ctx)
+
 	rotatingKey, err := keypair.NewSigningKeyRotator(
 		publishkey.NewKeyPublisher(
 			cfg.APPConfig.InternalGraphQLURL).
 			PublishToKeyManagementService)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to create signing key rotator")
 		return nil, err
 	}
 
 	requestedDuration := time.Hour * time.Duration(cfg.APPConfig.KeyRollingDurationInHours)
-	rotatingKey.RotateInBackground(getMinimumDuration(requestedDuration, time.Minute*minKeyValidityDurationMinutes))
+	actualDuration := getMinimumDuration(requestedDuration, time.Minute*minKeyValidityDurationMinutes)
+
+	log.Info().Dur("duration", actualDuration).Msg("Starting key rotation in background")
+	rotatingKey.RotateInBackground(actualDuration)
 
 	return rotatingKey, nil
 }

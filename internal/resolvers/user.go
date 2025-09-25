@@ -5,7 +5,6 @@ import (
 	"github.com/weeb-vip/user-service/http/handlers/requestinfo"
 	"github.com/weeb-vip/user-service/internal/logger"
 	"github.com/weeb-vip/user-service/internal/services/users"
-	"go.uber.org/zap"
 
 	"github.com/weeb-vip/user-service/graph/model"
 )
@@ -20,12 +19,12 @@ func CreateUser( // nolint
 
 	userID := req.UserID
 	if userID == nil {
-		log.Error("User ID is missing")
+		log.Error().Msg("User ID is missing")
 		return nil, nil
 	}
 
 	if input.ID != *userID {
-		log.Error("User ID does not match, unauthenticated")
+		log.Error().Msg("User ID does not match, unauthenticated")
 		return nil, nil
 	}
 	language := input.Language.String()
@@ -67,11 +66,11 @@ func GetUser( // nolint
 
 	userID := req.UserID
 	if userID == nil {
-		log.Error("User ID is missing")
+		log.Error().Msg("User ID is missing")
 		return nil, nil
 	}
 
-	log.Info("Fetching user with ID: ", zap.Any("userid", *userID))
+	log.Info().Any("userid", *userID).Msg("Fetching user with ID")
 	user, err := userService.GetUserDetails(ctx, *userID)
 
 	if err != nil {
@@ -107,8 +106,8 @@ func UpdateUser( // nolint
 		language = new(string)
 		*language = input.Language.String()
 	}
-	log.Info("User ID from context: ", zap.Any("userid", userID))
-	log.Info("language: ", zap.Any("language", language))
+	log.Info().Any("userid", userID).Msg("User ID from context")
+	log.Info().Any("language", language).Msg("language")
 	updatedUser, err := userService.UpdateUser(ctx, *userID, input.Username, input.Firstname, input.Lastname, language, input.Email)
 
 	if err != nil {

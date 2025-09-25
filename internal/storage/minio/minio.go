@@ -8,7 +8,6 @@ import (
 	"github.com/weeb-vip/user-service/config"
 	"github.com/weeb-vip/user-service/internal/logger"
 	"github.com/weeb-vip/user-service/internal/storage"
-	"go.uber.org/zap"
 )
 
 type MinioStorageImpl struct {
@@ -32,13 +31,13 @@ func NewMinioStorage(cfg config.MinioConfig) storage.Storage {
 
 func (m *MinioStorageImpl) Put(ctx context.Context, data []byte, path string) error {
 	log := logger.FromCtx(ctx)
-	log.Info("uploading to minio", zap.String("path", path))
+	log.Info().Str("path", path).Msg("uploading to minio")
 	_, err := m.Client.PutObject(ctx, m.Bucket, path, bytes.NewReader(data), int64(len(data)), minio.PutObjectOptions{
 		ContentType: "application/octet-stream",
 	})
 
 	if err != nil {
-		log.Error("error uploading to minio", zap.String("path", path), zap.String("error", err.Error()))
+		log.Error().Str("path", path).Err(err).Msg("error uploading to minio")
 	}
 	return err
 }
