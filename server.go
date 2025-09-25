@@ -4,13 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/weeb-vip/user-service/internal/logger"
+	"github.com/weeb-vip/user-service/metrics"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	"github.com/weeb-vip/user-service/config"
 	"github.com/weeb-vip/user-service/http/handlers"
+	"github.com/weeb-vip/user-service/http/middleware"
 	"github.com/weeb-vip/user-service/internal/jwt"
 	"github.com/weeb-vip/user-service/internal/keypair"
 	"github.com/weeb-vip/user-service/internal/publishkey"
@@ -32,6 +35,12 @@ func StartServerWithContext(ctx context.Context) error { // nolint
 
 	log := logger.FromCtx(ctx)
 	log.Info().Msg("Starting server...")
+
+	// Initialize metrics
+	log.Info().Msg("Initializing metrics...")
+	_ = metrics.GetAppMetrics() // Initialize the metrics singleton
+	log.Info().Msg("Metrics initialized successfully")
+
 	log.Info().Msg("Loading keys...")
 	rotatingKey, err := getRotatingSigningKey(cfg, ctx)
 	if err != nil {
@@ -43,6 +52,9 @@ func StartServerWithContext(ctx context.Context) error { // nolint
 
 	router := chi.NewRouter()
 
+	// Add tracing middleware first to capture all requests
+	router.Use(middleware.TracingMiddleware())
+
 	router.Use(cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:8081", "http://localhost:3000"},
 		AllowCredentials: true,
@@ -51,6 +63,7 @@ func StartServerWithContext(ctx context.Context) error { // nolint
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 	router.Handle("/graphql", handlers.BuildRootHandler(jwt.New(rotatingKey)))
+	router.Handle("/metrics", promhttp.Handler())
 	router.Handle("/readyz", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200) // nolint
 	}))

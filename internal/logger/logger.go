@@ -47,6 +47,10 @@ func FromCtx(ctx context.Context) zerolog.Logger {
 		logger = l
 	} else {
 		logger = globalLogger
+		// If global logger is not initialized, use a default logger
+		if logger.GetLevel() == zerolog.Disabled {
+			logger = log.With().Logger()
+		}
 	}
 
 	// Add trace context if available

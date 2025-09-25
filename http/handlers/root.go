@@ -17,6 +17,7 @@ import (
 	"github.com/weeb-vip/user-service/http/handlers/logger"
 	"github.com/weeb-vip/user-service/http/handlers/metrics"
 	"github.com/weeb-vip/user-service/http/handlers/requestinfo"
+	"github.com/weeb-vip/user-service/http/middleware"
 	"github.com/weeb-vip/user-service/internal/jwt"
 	"github.com/weeb-vip/user-service/internal/measurements"
 	"github.com/weeb-vip/user-service/internal/services/image"
@@ -57,7 +58,8 @@ func BuildRootHandler(tokenizer jwt.Tokenizer) http.Handler { // nolint
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(cfg))
 	srv.Use(apollotracing.Tracer{})
-	
+	srv.Use(&middleware.GraphQLTracingExtension{})
+
 	// Add multipart form support for file uploads
 	srv.AddTransport(transport.MultipartForm{
 		MaxUploadSize: 10 << 20, // 10 MB
