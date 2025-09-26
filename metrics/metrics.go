@@ -1,9 +1,9 @@
 package metrics
 
 import (
-	"github.com/weeb-vip/user-service/config"
 	metricsLib "github.com/weeb-vip/go-metrics-lib"
 	"github.com/weeb-vip/go-metrics-lib/clients/prometheus"
+	"github.com/weeb-vip/user-service/config"
 )
 
 var metricsInstance metricsLib.MetricsImpl
@@ -28,7 +28,7 @@ func NewPrometheusInstance() *prometheus.PrometheusClient {
 }
 
 func initMetrics(prometheusInstance *prometheus.PrometheusClient) {
-	prometheusInstance.CreateHistogramVec("resolver_request_duration_histogram_milliseconds", "graphql resolver millisecond", []string{"service", "protocol", "resolver", "result", "env"}, []float64{
+	prometheusInstance.CreateHistogramVec("resolver_request_duration_histogram_milliseconds_buckets", "graphql resolver millisecond", []string{"service", "protocol", "resolver", "result", "env"}, []float64{
 		// create buckets 10000 split into 10 buckets
 		100,
 		200,

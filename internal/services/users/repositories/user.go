@@ -3,11 +3,13 @@ package repositories
 import (
 	"context"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 
 	"github.com/weeb-vip/user-service/internal/db"
 	"github.com/weeb-vip/user-service/internal/services/users/models"
+	"github.com/weeb-vip/user-service/metrics"
 )
 
 type UsersRepository interface {
@@ -48,6 +50,7 @@ func (repository *userRepository) AddUser(
 	lastName string,
 	language string,
 ) (*models.User, error) {
+	start := time.Now()
 	database := repository.DBService.GetDB()
 
 	credentials := models.User{
@@ -59,6 +62,15 @@ func (repository *userRepository) AddUser(
 	}
 	err := database.WithContext(ctx).FirstOrCreate(&credentials, models.User{Username: username}).Error
 
+	// Record database metrics
+	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
+	appMetrics := metrics.GetAppMetrics()
+	result := "success"
+	if err != nil {
+		result = "error"
+	}
+	appMetrics.DatabaseMetric(duration, "users", "create", result)
+
 	if err != nil {
 		return nil, err
 	}
@@ -67,11 +79,22 @@ func (repository *userRepository) AddUser(
 }
 
 func (repository *userRepository) GetUserById(ctx context.Context, id string) (*models.User, error) {
+	start := time.Now()
 	database := repository.DBService.GetDB()
 
 	var credentials models.User
 
 	err := database.WithContext(ctx).Where("id = ?", id).First(&credentials).Error
+
+	// Record database metrics
+	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
+	appMetrics := metrics.GetAppMetrics()
+	result := "success"
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		result = "error"
+	}
+	appMetrics.DatabaseMetric(duration, "users", "select", result)
+
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -86,11 +109,22 @@ func (repository *userRepository) DeleteUser(ctx context.Context, username strin
 }
 
 func (repository *userRepository) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
+	start := time.Now()
 	database := repository.DBService.GetDB()
 
 	var credentials models.User
 
 	err := database.WithContext(ctx).Where("username = ?", username).First(&credentials).Error
+
+	// Record database metrics
+	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
+	appMetrics := metrics.GetAppMetrics()
+	result := "success"
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		result = "error"
+	}
+	appMetrics.DatabaseMetric(duration, "users", "select", result)
+
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}

@@ -18,7 +18,7 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Name                      string `env:"CONFIG__APP_CONFIG__NAME" required:"true" default:"card-delivery-service"`
+	Name                      string `env:"CONFIG__APP_CONFIG__NAME" required:"true" default:"user-service"`
 	APPName                   string `env:"CONFIG__APP_CONFIG__APP_NAME" default:"user-service"`
 	Version                   string `env:"APP__VERSION" default:"local"`
 	Env                       string `env:"APP_ENV" default:"dev"`

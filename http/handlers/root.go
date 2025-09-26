@@ -59,6 +59,7 @@ func BuildRootHandler(tokenizer jwt.Tokenizer) http.Handler { // nolint
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(cfg))
 	srv.Use(apollotracing.Tracer{})
 	srv.Use(&middleware.GraphQLTracingExtension{})
+	srv.Use(&middleware.GraphQLMetricsExtension{})
 
 	// Add multipart form support for file uploads
 	srv.AddTransport(transport.MultipartForm{
