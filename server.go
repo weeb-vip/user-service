@@ -55,6 +55,9 @@ func StartServerWithContext(ctx context.Context) error { // nolint
 	// Add tracing middleware first to capture all requests
 	router.Use(middleware.TracingMiddleware())
 
+	// Add gzip compression middleware
+	router.Use(middleware.GzipMiddleware())
+
 	router.Use(cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:8081", "http://localhost:3000"},
 		AllowCredentials: true,
