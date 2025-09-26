@@ -50,6 +50,18 @@ func GzipMiddleware() func(http.Handler) http.Handler {
 				log.Debug().Msg("Decompressed gzip request body")
 			}
 
+			// Skip compression for /metrics endpoint
+			if r.URL.Path == "/metrics" {
+				span.SetAttributes(
+					attribute.Bool("compression.request_compressed", requestCompressed),
+					attribute.Bool("compression.response_compressed", false),
+					attribute.String("compression.skip_reason", "metrics_endpoint"),
+				)
+				r = r.WithContext(ctx)
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			// Check if client accepts gzip encoding for response
 			if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 				span.SetAttributes(
