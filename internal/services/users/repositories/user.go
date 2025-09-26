@@ -10,6 +10,9 @@ import (
 	"github.com/weeb-vip/user-service/internal/db"
 	"github.com/weeb-vip/user-service/internal/services/users/models"
 	"github.com/weeb-vip/user-service/metrics"
+	"github.com/weeb-vip/user-service/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type UsersRepository interface {
@@ -50,6 +53,18 @@ func (repository *userRepository) AddUser(
 	lastName string,
 	language string,
 ) (*models.User, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "repository.AddUser",
+		trace.WithAttributes(
+			attribute.String("user.id", userID),
+			attribute.String("user.username", username),
+			attribute.String("table", "users"),
+			attribute.String("operation", "create"),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
 	start := time.Now()
 	database := repository.DBService.GetDB()
 
@@ -65,9 +80,9 @@ func (repository *userRepository) AddUser(
 	// Record database metrics
 	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
 	appMetrics := metrics.GetAppMetrics()
-	result := "success"
+	result := metrics.Success
 	if err != nil {
-		result = "error"
+		result = metrics.Error
 	}
 	appMetrics.DatabaseMetric(duration, "users", "create", result)
 
@@ -79,6 +94,17 @@ func (repository *userRepository) AddUser(
 }
 
 func (repository *userRepository) GetUserById(ctx context.Context, id string) (*models.User, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "repository.GetUserById",
+		trace.WithAttributes(
+			attribute.String("user.id", id),
+			attribute.String("table", "users"),
+			attribute.String("operation", "select"),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
 	start := time.Now()
 	database := repository.DBService.GetDB()
 
@@ -89,9 +115,9 @@ func (repository *userRepository) GetUserById(ctx context.Context, id string) (*
 	// Record database metrics
 	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
 	appMetrics := metrics.GetAppMetrics()
-	result := "success"
+	result := metrics.Success
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		result = "error"
+		result = metrics.Error
 	}
 	appMetrics.DatabaseMetric(duration, "users", "select", result)
 
@@ -103,12 +129,46 @@ func (repository *userRepository) GetUserById(ctx context.Context, id string) (*
 }
 
 func (repository *userRepository) DeleteUser(ctx context.Context, username string) error {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "repository.DeleteUser",
+		trace.WithAttributes(
+			attribute.String("user.username", username),
+			attribute.String("table", "users"),
+			attribute.String("operation", "delete"),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	start := time.Now()
 	database := repository.DBService.GetDB()
 
-	return database.WithContext(ctx).Where("username = ?", username).Delete(&models.User{}).Error
+	err := database.WithContext(ctx).Where("username = ?", username).Delete(&models.User{}).Error
+
+	// Record database metrics
+	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
+	appMetrics := metrics.GetAppMetrics()
+	result := metrics.Success
+	if err != nil {
+		result = metrics.Error
+	}
+	appMetrics.DatabaseMetric(duration, "users", "delete", result)
+
+	return err
 }
 
 func (repository *userRepository) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "repository.GetUserByUsername",
+		trace.WithAttributes(
+			attribute.String("user.username", username),
+			attribute.String("table", "users"),
+			attribute.String("operation", "select"),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
 	start := time.Now()
 	database := repository.DBService.GetDB()
 
@@ -119,9 +179,9 @@ func (repository *userRepository) GetUserByUsername(ctx context.Context, usernam
 	// Record database metrics
 	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
 	appMetrics := metrics.GetAppMetrics()
-	result := "success"
+	result := metrics.Success
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		result = "error"
+		result = metrics.Error
 	}
 	appMetrics.DatabaseMetric(duration, "users", "select", result)
 
@@ -144,6 +204,18 @@ func (repository *userRepository) UpdateUser(
 	language *string,
 	email *string,
 ) (*models.User, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "repository.UpdateUser",
+		trace.WithAttributes(
+			attribute.String("user.id", id),
+			attribute.String("table", "users"),
+			attribute.String("operation", "update"),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	start := time.Now()
 	database := repository.DBService.GetDB()
 
 	user, err := repository.GetUserById(ctx, id)
@@ -172,6 +244,16 @@ func (repository *userRepository) UpdateUser(
 	}
 
 	err = database.WithContext(ctx).Save(&user).Error
+
+	// Record database metrics
+	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
+	appMetrics := metrics.GetAppMetrics()
+	result := metrics.Success
+	if err != nil {
+		result = metrics.Error
+	}
+	appMetrics.DatabaseMetric(duration, "users", "update", result)
+
 	if err != nil {
 		return nil, err
 	}
@@ -185,6 +267,19 @@ func (repository *userRepository) UpdateProfileImageURL(
 	id string,
 	profileImageURL string,
 ) (*models.User, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "repository.UpdateProfileImageURL",
+		trace.WithAttributes(
+			attribute.String("user.id", id),
+			attribute.String("table", "users"),
+			attribute.String("operation", "update"),
+			attribute.String("image.url", profileImageURL),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	start := time.Now()
 	database := repository.DBService.GetDB()
 
 	user, err := repository.GetUserById(ctx, id)
@@ -199,6 +294,16 @@ func (repository *userRepository) UpdateProfileImageURL(
 	user.ProfileImageURL = &profileImageURL
 
 	err = database.WithContext(ctx).Save(&user).Error
+
+	// Record database metrics
+	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
+	appMetrics := metrics.GetAppMetrics()
+	result := metrics.Success
+	if err != nil {
+		result = metrics.Error
+	}
+	appMetrics.DatabaseMetric(duration, "users", "update", result)
+
 	if err != nil {
 		return nil, err
 	}

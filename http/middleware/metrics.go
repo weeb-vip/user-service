@@ -50,7 +50,8 @@ func (e GraphQLMetricsExtension) InterceptField(ctx context.Context, next graphq
 		resultStatus = "error"
 	}
 
-	resolverName := fc.Field.ObjectDefinition.Name + "." + fc.Field.Name
+	// Use field name only (matching anime-api format)
+	resolverName := fc.Field.Name
 	appMetrics.ResolverMetric(duration, resolverName, resultStatus)
 
 	return result, err

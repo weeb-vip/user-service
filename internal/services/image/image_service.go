@@ -15,6 +15,10 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/weeb-vip/user-service/internal/storage"
+	"github.com/weeb-vip/user-service/metrics"
+	"github.com/weeb-vip/user-service/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/image/draw"
 )
 
@@ -29,10 +33,31 @@ func NewImageService(storage storage.Storage) *ImageService {
 }
 
 func (s *ImageService) UploadProfileImage(ctx context.Context, userID string, file graphql.Upload) (string, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "imageService.UploadProfileImage",
+		trace.WithAttributes(
+			attribute.String("user.id", userID),
+			attribute.String("service", "image"),
+			attribute.String("method", "UploadProfileImage"),
+			attribute.String("file.name", file.Filename),
+			attribute.Int64("file.size", file.Size),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	startTime := time.Now()
+
 	// Read file content
 	buf := bytes.NewBuffer(nil)
 	_, err := io.Copy(buf, file.File)
 	if err != nil {
+		metrics.GetAppMetrics().ServiceMetric(
+			float64(time.Since(startTime).Milliseconds()),
+			"image",
+			"UploadProfileImage",
+			metrics.Error,
+		)
 		return "", fmt.Errorf("failed to read file: %w", err)
 	}
 
@@ -74,16 +99,37 @@ func (s *ImageService) UploadProfileImage(ctx context.Context, userID string, fi
 	// Upload original image
 	err = s.storage.Put(ctx, processedData, originalFilename)
 	if err != nil {
+		metrics.GetAppMetrics().ServiceMetric(
+			float64(time.Since(startTime).Milliseconds()),
+			"image",
+			"UploadProfileImage",
+			metrics.Error,
+		)
 		return "", fmt.Errorf("failed to upload original image to storage: %w", err)
 	}
+
+	span.SetAttributes(attribute.String("image.path", originalFilename))
 
 	// Generate and upload thumbnails
 	err = s.generateAndUploadThumbnails(ctx, processedData, baseFilename, processedExt)
 	if err != nil {
 		// If thumbnail generation fails, delete the original and return error
 		_ = s.storage.Delete(ctx, originalFilename)
+		metrics.GetAppMetrics().ServiceMetric(
+			float64(time.Since(startTime).Milliseconds()),
+			"image",
+			"UploadProfileImage",
+			metrics.Error,
+		)
 		return "", fmt.Errorf("failed to generate thumbnails: %w", err)
 	}
+
+	metrics.GetAppMetrics().ServiceMetric(
+		float64(time.Since(startTime).Milliseconds()),
+		"image",
+		"UploadProfileImage",
+		metrics.Success,
+	)
 
 	// Return the original image path
 	return originalFilename, nil
@@ -214,13 +260,38 @@ func (s *ImageService) encodeImage(img image.Image, format string) ([]byte, erro
 }
 
 func (s *ImageService) DeleteProfileImage(ctx context.Context, imagePath string) error {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "imageService.DeleteProfileImage",
+		trace.WithAttributes(
+			attribute.String("service", "image"),
+			attribute.String("method", "DeleteProfileImage"),
+			attribute.String("image.path", imagePath),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	startTime := time.Now()
+
 	if imagePath == "" {
+		metrics.GetAppMetrics().ServiceMetric(
+			float64(time.Since(startTime).Milliseconds()),
+			"image",
+			"DeleteProfileImage",
+			metrics.Success,
+		)
 		return nil
 	}
 
 	// Delete original image
 	err := s.storage.Delete(ctx, imagePath)
 	if err != nil {
+		metrics.GetAppMetrics().ServiceMetric(
+			float64(time.Since(startTime).Milliseconds()),
+			"image",
+			"DeleteProfileImage",
+			metrics.Error,
+		)
 		return fmt.Errorf("failed to delete original image from storage: %w", err)
 	}
 
@@ -232,10 +303,17 @@ func (s *ImageService) DeleteProfileImage(ctx context.Context, imagePath string)
 	// Delete 32x32 thumbnail
 	thumb32Path := baseWithoutExt + "_32" + ext
 	_ = s.storage.Delete(ctx, thumb32Path) // Don't fail if thumbnail doesn't exist
-	
+
 	// Delete 64x64 thumbnail
 	thumb64Path := baseWithoutExt + "_64" + ext
 	_ = s.storage.Delete(ctx, thumb64Path) // Don't fail if thumbnail doesn't exist
+
+	metrics.GetAppMetrics().ServiceMetric(
+		float64(time.Since(startTime).Milliseconds()),
+		"image",
+		"DeleteProfileImage",
+		metrics.Success,
+	)
 
 	return nil
 }
