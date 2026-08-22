@@ -34,7 +34,7 @@ type DBConfig struct {
 	User               string `env:"DBUSER" required:"true" default:"postgres"`
 	Password           string `env:"DBPASSWORD" required:"true" default:"mysecretpassword"`
 	DB                 string `env:"DBNAME" required:"true" default:"auth"`
-	SSL                string `env:"DBSSL" default:"false"`
+	SSL                string `env:"DBSSL" default:"require"`
 	MigrationTableName string `env:"DBMIGRATIONTABLE" default:"__migrations_auth"`
 }
 

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/weeb-vip/user-service/config"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -47,7 +47,7 @@ func (service *Service) setupSQLDB(db *gorm.DB) {
 
 func (service *Service) connect(cfg config.DBConfig) *gorm.DB {
 	log.Println("Connecting to database...", cfg.Host, cfg.Port, cfg.DB)
-	db, err := gorm.Open(mysql.Open(fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=%s&interpolateParams=true", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DB, cfg.SSL)), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DB, cfg.SSL)), &gorm.Config{})
 
 	if err != nil {
 		panic("failed to connect database")
