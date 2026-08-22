@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	//go:embed postgres
+	//go:embed scripts
 	migrations embed.FS
 )
 
@@ -23,7 +23,7 @@ func New(db *gorm.DB, migrationTableName string) (*migrate.Migrate, error) {
 		return nil, err
 	}
 
-	source, err := httpfs.New(http.FS(migrations), "postgres")
+	source, err := httpfs.New(http.FS(migrations), "scripts")
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,6 @@ CREATE TABLE IF NOT EXISTS users
     last_name  VARCHAR(255) NOT NULL,
     username   varchar(255) NOT NULL,
     language   varchar(3)   NOT NULL,
-    created_at timestamp    NOT NULL,
-    updated_at timestamp    NOT NULL
+    created_at timestamptz    NOT NULL,
+    updated_at timestamptz    NOT NULL
 );
