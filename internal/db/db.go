@@ -52,10 +52,22 @@ func (service *Service) setupSQLDB(db *gorm.DB) {
 	sqlDB.SetMaxOpenConns(maxOpenConns)
 
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
-	// Bounded so a failover or DNS change is picked up without a restart, but long
-	// enough that connections survive quiet periods and get reused.
-	sqlDB.SetConnMaxLifetime(30 * time.Minute)
-	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
+	//
+	// Connections are kept for hours because building one is expensive here.
+	// Measured against the production RDS instance: opening a connection costs
+	// 6-52 seconds, while a query on an already-open connection costs about 7ms.
+	// The gap is TLS and SCRAM authentication, both CPU-bound, on a db.t4g.micro
+	// whose CPU credit balance sits at zero.
+	//
+	// The old 10 minute idle timeout emptied the pool during any quiet period,
+	// so the first request after a lull paid that cost in full. It also
+	// discarded the pgx statement cache, which is per-connection, making the
+	// same query re-plan from cold.
+	//
+	// Four hours rather than never, so a failover or DNS change is still picked
+	// up without needing a restart.
+	sqlDB.SetConnMaxLifetime(4 * time.Hour)
+	sqlDB.SetConnMaxIdleTime(1 * time.Hour)
 }
 
 func (service *Service) connect(cfg config.DBConfig) *gorm.DB {
