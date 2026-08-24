@@ -342,9 +342,9 @@ func TestImageService_UploadProfileImage_PathUniqueness(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockStorage := mocks.NewMockStorage(ctrl)
-	
+
 	paths := make(map[string]bool)
-	
+
 	// Expect 3 different uploads with unique paths
 	mockStorage.EXPECT().
 		Put(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -367,7 +367,7 @@ func TestImageService_UploadProfileImage_PathUniqueness(t *testing.T) {
 			File:     strings.NewReader("content"),
 			Filename: "test.jpg",
 		}
-		
+
 		path, err := service.UploadProfileImage(ctx, "user123", upload)
 		require.NoError(t, err)
 		assert.NotEmpty(t, path)
@@ -393,7 +393,7 @@ func TestImageService_ValidateExtensions(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockStorage := mocks.NewMockStorage(ctrl)
-	
+
 	// For valid extensions, expect Put to be called
 	for range validExtensions {
 		mockStorage.EXPECT().
@@ -412,7 +412,7 @@ func TestImageService_ValidateExtensions(t *testing.T) {
 				File:     strings.NewReader("content"),
 				Filename: "file" + ext,
 			}
-			
+
 			path, err := service.UploadProfileImage(ctx, "user", upload)
 			require.NoError(t, err)
 			assert.NotEmpty(t, path)
@@ -426,7 +426,7 @@ func TestImageService_ValidateExtensions(t *testing.T) {
 				File:     strings.NewReader("content"),
 				Filename: "file" + ext,
 			}
-			
+
 			path, err := service.UploadProfileImage(ctx, "user", upload)
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), "invalid file extension")

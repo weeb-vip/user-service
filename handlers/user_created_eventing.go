@@ -51,7 +51,7 @@ func UserCreatedEventingWithContext(ctx context.Context) error {
 		}
 	}(driver)
 
-	processorInstance := processor.NewProcessor[*kafka.Message, Payload](driver, cfg.KafkaConfig.Topic, process)
+	processorInstance := processor.NewProcessor[*kafka.Message, Payload](driver, cfg.KafkaConfig.Topic, process[*kafka.Message])
 
 	log.Info().Str("topic", cfg.KafkaConfig.Topic).Msg("initializing backoff retry middleware")
 	backoffRetryInstance := backoffretry.NewBackoffRetry[Payload](driver, backoffretry.Config{
@@ -75,7 +75,10 @@ func UserCreatedEventingWithContext(ctx context.Context) error {
 	return nil
 }
 
-func process(ctx context.Context, data event.Event[*kafka.Message, Payload]) (event.Event[*kafka.Message, Payload], error) {
+// process is generic over the driver message because it never looks at one: it
+// reads Payload and nothing else. That is what lets the Kafka and NATS handlers
+// share it instead of keeping two copies of the user-creation logic.
+func process[DM any](ctx context.Context, data event.Event[DM, Payload]) (event.Event[DM, Payload], error) {
 	log := logger.FromCtx(ctx)
 	if data.Payload.UserID == "" {
 		log.Error().Msg("Payload is nil")

@@ -14,6 +14,7 @@ type Config struct {
 	DBConfig           DBConfig
 	RefreshTokenConfig RefreshTokenConfig
 	KafkaConfig        KafkaConfig
+	NatsConfig         NatsConfig
 	MinioConfig        MinioConfig
 }
 
@@ -40,6 +41,25 @@ type DBConfig struct {
 
 type RefreshTokenConfig struct {
 	TokenTTL int `env:"CONFIG__REFRESH_TOKEN_CONFIG__TOKEN_TTL" default:"4380"` // 6 months in hours.
+}
+
+// NatsConfig mirrors KafkaConfig, so moving between the two is one substitution
+// per setting.
+type NatsConfig struct {
+	URL string `default:"nats://localhost:4222" env:"NATSURL"`
+
+	// The durable consumer name -- the closest equivalent to a Kafka consumer
+	// group. Left empty the consumer is ephemeral and loses its position across
+	// restarts.
+	ConsumerGroupName string `default:"user-service-nats" env:"NATSCONSUMERGROUPNAME"`
+
+	// Empty on purpose, unlike the CDC consumers: user-created is produced by
+	// auth rather than Debezium, so nothing else declares a stream over it and
+	// the driver creates one from the subject.
+	StreamName string `env:"NATSSTREAMNAME"`
+
+	Offset  string `default:"earliest" env:"NATSOFFSET"`
+	Subject string `default:"user-created" env:"NATSSUBJECT"`
 }
 
 type KafkaConfig struct {
