@@ -1,8 +1,6 @@
 module github.com/weeb-vip/user-service
 
-go 1.23.0
-
-toolchain go1.23.11
+go 1.24.0
 
 require (
 	github.com/99designs/gqlgen v0.17.78
@@ -11,7 +9,7 @@ require (
 
 require (
 	github.com/DataDog/datadog-go v4.8.3+incompatible
-	github.com/ThatCatDev/ep/v2 v2.2.6
+	github.com/ThatCatDev/ep/v2 v2.3.0
 	github.com/confluentinc/confluent-kafka-go/v2 v2.11.0
 	github.com/go-chi/chi v1.5.5
 	github.com/golang-jwt/jwt/v4 v4.4.2
@@ -167,6 +165,9 @@ require (
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/mutecomm/go-sqlcipher/v4 v4.4.0 // indirect
 	github.com/nakagami/firebirdsql v0.0.0-20190310045651-3c02a58cfed8 // indirect
+	github.com/nats-io/nats.go v1.45.0 // indirect
+	github.com/nats-io/nkeys v0.4.11 // indirect
+	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/neo4j/neo4j-go-driver v1.8.1-0.20200803113522-b626aa943eba // indirect
 	github.com/nxadm/tail v1.4.11 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
@@ -215,7 +216,7 @@ require (
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/term v0.34.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
-	golang.org/x/time v0.6.0 // indirect
+	golang.org/x/time v0.11.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.169.0 // indirect

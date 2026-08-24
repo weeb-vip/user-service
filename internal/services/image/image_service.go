@@ -91,7 +91,7 @@ func (s *ImageService) UploadProfileImage(ctx context.Context, userID string, fi
 	timestamp := time.Now().Format("20060102150405.000")
 	// Replace dots in timestamp to avoid issues with file extensions
 	timestamp = strings.ReplaceAll(timestamp, ".", "")
-	
+
 	// Get base filename without extension for creating multiple versions
 	baseFilename := fmt.Sprintf("profiles/%s/profile_%s", userID, timestamp)
 	originalFilename := baseFilename + processedExt
@@ -198,7 +198,7 @@ func (s *ImageService) generateAndUploadThumbnails(ctx context.Context, imageDat
 	if err != nil {
 		return fmt.Errorf("failed to encode 32x32 thumbnail: %w", err)
 	}
-	
+
 	thumb32Filename := baseFilename + "_32" + ext
 	err = s.storage.Put(ctx, thumb32Data, thumb32Filename)
 	if err != nil {
@@ -210,7 +210,7 @@ func (s *ImageService) generateAndUploadThumbnails(ctx context.Context, imageDat
 	if err != nil {
 		return fmt.Errorf("failed to encode 64x64 thumbnail: %w", err)
 	}
-	
+
 	thumb64Filename := baseFilename + "_64" + ext
 	err = s.storage.Put(ctx, thumb64Data, thumb64Filename)
 	if err != nil {
@@ -226,17 +226,17 @@ func (s *ImageService) generateAndUploadThumbnails(ctx context.Context, imageDat
 func (s *ImageService) resizeImage(src image.Image, width, height int) (image.Image, error) {
 	// Create a new image with the target size
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
-	
+
 	// Use BiLinear scaling for good quality thumbnails
 	draw.BiLinear.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Over, nil)
-	
+
 	return dst, nil
 }
 
 // encodeImage encodes an image based on the original format
 func (s *ImageService) encodeImage(img image.Image, format string) ([]byte, error) {
 	var buf bytes.Buffer
-	
+
 	switch format {
 	case "jpeg":
 		err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: 85})
@@ -255,7 +255,7 @@ func (s *ImageService) encodeImage(img image.Image, format string) ([]byte, erro
 			return nil, fmt.Errorf("failed to encode as PNG: %w", err)
 		}
 	}
-	
+
 	return buf.Bytes(), nil
 }
 
@@ -299,7 +299,7 @@ func (s *ImageService) DeleteProfileImage(ctx context.Context, imagePath string)
 	// Extract base filename and extension
 	ext := filepath.Ext(imagePath)
 	baseWithoutExt := strings.TrimSuffix(imagePath, ext)
-	
+
 	// Delete 32x32 thumbnail
 	thumb32Path := baseWithoutExt + "_32" + ext
 	_ = s.storage.Delete(ctx, thumb32Path) // Don't fail if thumbnail doesn't exist
