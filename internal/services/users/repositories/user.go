@@ -75,7 +75,11 @@ func (repository *userRepository) AddUser(
 		LastName:  lastName,
 		Language:  language,
 	}
-	err := database.WithContext(ctx).FirstOrCreate(&credentials, models.User{Username: username}).Error
+	// Match on the primary key, not the username. The username is empty for
+	// accounts created from a user-created event, and matching on it made
+	// FirstOrCreate find an unrelated row with an equally empty username
+	// instead of inserting the new one.
+	err := database.WithContext(ctx).Where("id = ?", userID).FirstOrCreate(&credentials).Error
 
 	// Record database metrics
 	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
