@@ -46,8 +46,15 @@ func (service *usersService) AddUser(
 
 	startTime := time.Now()
 
-	// check if user already exists
-	user, err := service.usersRepository.GetUserByUsername(ctx, username)
+	// Identity here is the user ID from the auth service, not the username.
+	//
+	// user-created events carry no username, so every one of them arrives with
+	// an empty string. Matching existence on username meant the first row that
+	// happened to have an empty username matched every subsequent event, and
+	// no user could be created after it: the events failed, were pushed onto
+	// the retry queue, and stayed there because nothing consumes it. The ID is
+	// the primary key and is always present, so it is the only safe key here.
+	user, err := service.usersRepository.GetUserById(ctx, id)
 
 	if err != nil {
 		metrics.GetAppMetrics().ServiceMetric(
@@ -72,6 +79,38 @@ func (service *usersService) AddUser(
 		return nil, &Error{
 			Code:    UserErrorUserExists,
 			Message: "user already exists",
+		}
+	}
+
+	// A username is optional when the account is first created from an event,
+	// but it still has to stay unique once somebody sets one. Only check when
+	// there is something to check -- an empty username is the normal state for
+	// a freshly created account, not a collision.
+	if username != "" {
+		existing, err := service.usersRepository.GetUserByUsername(ctx, username)
+		if err != nil {
+			metrics.GetAppMetrics().ServiceMetric(
+				float64(time.Since(startTime).Milliseconds()),
+				"users",
+				"AddUser",
+				metrics.Error,
+			)
+			return nil, &Error{
+				Code:    UserErrorInternalError,
+				Message: "database error",
+			}
+		}
+		if existing != nil {
+			metrics.GetAppMetrics().ServiceMetric(
+				float64(time.Since(startTime).Milliseconds()),
+				"users",
+				"AddUser",
+				metrics.Error,
+			)
+			return nil, &Error{
+				Code:    UserErrorUserExists,
+				Message: "user already exists",
+			}
 		}
 	}
 
