@@ -69,7 +69,12 @@ func (service *usersService) AddUser(
 		}
 	}
 
-	if user != nil {
+	// Check the ID rather than the pointer. GetUserById does not share
+	// GetUserByUsername's convention of returning nil when nothing matched: it
+	// returns a pointer to a zero-valued User even on ErrRecordNotFound, so a
+	// nil check here reports that every user already exists. Other callers rely
+	// on that behaviour, so this reads the ID instead of changing it for them.
+	if user != nil && user.ID != "" {
 		metrics.GetAppMetrics().ServiceMetric(
 			float64(time.Since(startTime).Milliseconds()),
 			"users",
