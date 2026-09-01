@@ -28,6 +28,8 @@ type UsersRepository interface {
 	GetUserById(ctx context.Context, id string) (*models.User, error)
 	UpdateUser(ctx context.Context, id string, username *string, firstName *string, lastName *string, language *string, email *string) (*models.User, error)
 	UpdateProfileImageURL(ctx context.Context, id string, profileImageURL string) (*models.User, error)
+	UpdateBannerImageURL(ctx context.Context, id string, bannerImageURL string) (*models.User, error)
+	UpdateCustomization(ctx context.Context, id string, bio *string, accentColor *string, listsPublic *bool) (*models.User, error)
 	DeleteUser(ctx context.Context, username string) error
 }
 
@@ -322,4 +324,110 @@ func GetUsersRepository() UsersRepository {
 	}
 
 	return userRepositorySingleton
+}
+
+// UpdateBannerImageURL sets the wide header image path. Mirrors
+// UpdateProfileImageURL -- a banner is stored the same way, just a different
+// column and object path.
+func (repository *userRepository) UpdateBannerImageURL(
+	ctx context.Context,
+	id string,
+	bannerImageURL string,
+) (*models.User, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "repository.UpdateBannerImageURL",
+		trace.WithAttributes(
+			attribute.String("user.id", id),
+			attribute.String("table", "users"),
+			attribute.String("operation", "update"),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	start := time.Now()
+	database := repository.DBService.GetDB()
+
+	user, err := repository.GetUserById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	user.BannerImageURL = &bannerImageURL
+
+	err = database.WithContext(ctx).Save(&user).Error
+
+	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
+	result := metrics.Success
+	if err != nil {
+		result = metrics.Error
+	}
+	metrics.GetAppMetrics().DatabaseMetric(duration, "users", "update", result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return repository.GetUserById(ctx, id)
+}
+
+// UpdateCustomization writes the page's customization fields. Each is optional:
+// a nil leaves the stored value untouched, so a client can change the bio
+// without also having to resend the accent colour.
+func (repository *userRepository) UpdateCustomization(
+	ctx context.Context,
+	id string,
+	bio *string,
+	accentColor *string,
+	listsPublic *bool,
+) (*models.User, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "repository.UpdateCustomization",
+		trace.WithAttributes(
+			attribute.String("user.id", id),
+			attribute.String("table", "users"),
+			attribute.String("operation", "update"),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	start := time.Now()
+	database := repository.DBService.GetDB()
+
+	user, err := repository.GetUserById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if bio != nil {
+		user.Bio = bio
+	}
+	if accentColor != nil {
+		user.AccentColor = accentColor
+	}
+	if listsPublic != nil {
+		user.ListsPublic = *listsPublic
+	}
+
+	err = database.WithContext(ctx).Save(&user).Error
+
+	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
+	result := metrics.Success
+	if err != nil {
+		result = metrics.Error
+	}
+	metrics.GetAppMetrics().DatabaseMetric(duration, "users", "update", result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return repository.GetUserById(ctx, id)
 }

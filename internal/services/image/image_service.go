@@ -135,6 +135,69 @@ func (s *ImageService) UploadProfileImage(ctx context.Context, userID string, fi
 	return originalFilename, nil
 }
 
+// UploadBannerImage stores a user's wide header image.
+//
+// Like UploadProfileImage but without the 32/64 thumbnails: a banner is shown
+// at one large size, and a 64px version of it would be useless. The original
+// (processed) is the only object written, under banners/<user>/, and the page
+// requests it at full quality.
+func (s *ImageService) UploadBannerImage(ctx context.Context, userID string, file graphql.Upload) (string, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "imageService.UploadBannerImage",
+		trace.WithAttributes(
+			attribute.String("user.id", userID),
+			attribute.String("service", "image"),
+			attribute.String("method", "UploadBannerImage"),
+			attribute.String("file.name", file.Filename),
+			attribute.Int64("file.size", file.Size),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	startTime := time.Now()
+
+	buf := bytes.NewBuffer(nil)
+	if _, err := io.Copy(buf, file.File); err != nil {
+		metrics.GetAppMetrics().ServiceMetric(float64(time.Since(startTime).Milliseconds()), "image", "UploadBannerImage", metrics.Error)
+		return "", fmt.Errorf("failed to read file: %w", err)
+	}
+
+	ext := filepath.Ext(file.Filename)
+	if ext == "" {
+		ext = ".jpg"
+	}
+	allowedExts := []string{".jpg", ".jpeg", ".png", ".gif", ".webp"}
+	isValidExt := false
+	for _, allowedExt := range allowedExts {
+		if strings.EqualFold(ext, allowedExt) {
+			isValidExt = true
+			break
+		}
+	}
+	if !isValidExt {
+		return "", fmt.Errorf("invalid file extension: %s", ext)
+	}
+
+	processedData, processedExt, err := s.processImage(buf.Bytes(), ext)
+	if err != nil {
+		return "", fmt.Errorf("failed to process image: %w", err)
+	}
+
+	timestamp := strings.ReplaceAll(time.Now().Format("20060102150405.000"), ".", "")
+	filename := fmt.Sprintf("banners/%s/banner_%s%s", userID, timestamp, processedExt)
+
+	if err := s.storage.Put(ctx, processedData, filename); err != nil {
+		metrics.GetAppMetrics().ServiceMetric(float64(time.Since(startTime).Milliseconds()), "image", "UploadBannerImage", metrics.Error)
+		return "", fmt.Errorf("failed to upload banner image to storage: %w", err)
+	}
+
+	span.SetAttributes(attribute.String("image.path", filename))
+	metrics.GetAppMetrics().ServiceMetric(float64(time.Since(startTime).Milliseconds()), "image", "UploadBannerImage", metrics.Success)
+
+	return filename, nil
+}
+
 // processImage handles image processing, converting GIFs to still images
 func (s *ImageService) processImage(data []byte, ext string) ([]byte, string, error) {
 	// If it's a GIF, convert to PNG (still image)

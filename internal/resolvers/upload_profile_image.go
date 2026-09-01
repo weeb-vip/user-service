@@ -95,22 +95,11 @@ func UploadProfileImage(ctx context.Context, userService users.User, imageServic
 		}()
 	}
 
-	// Convert to GraphQL model
-	language := model.Language(updatedUser.Language)
-
 	metrics.GetAppMetrics().ResolverMetric(
 		float64(time.Since(startTime).Milliseconds()),
 		"UploadProfileImage",
 		metrics.Success,
 	)
 
-	return &model.User{
-		ID:              updatedUser.ID,
-		Firstname:       updatedUser.FirstName,
-		Lastname:        updatedUser.LastName,
-		Username:        updatedUser.Username,
-		Language:        language,
-		Email:           updatedUser.Email,
-		ProfileImageURL: updatedUser.ProfileImageURL,
-	}, nil
+	return toGraphUser(updatedUser), nil
 }

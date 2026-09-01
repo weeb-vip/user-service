@@ -295,3 +295,51 @@ func (service *usersService) UpdateProfileImageURL(
 
 	return result, err
 }
+
+// UpdateBannerImageURL persists the banner path via the repository.
+func (service *usersService) UpdateBannerImageURL(ctx context.Context, id string, bannerImageURL string) (*models.User, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "service.UpdateBannerImageURL",
+		trace.WithAttributes(
+			attribute.String("user.id", id),
+			attribute.String("service", "users"),
+			attribute.String("method", "UpdateBannerImageURL"),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	return service.usersRepository.UpdateBannerImageURL(ctx, id, bannerImageURL)
+}
+
+// UpdateCustomization persists the page's bio, accent and list visibility.
+func (service *usersService) UpdateCustomization(ctx context.Context, id string, bio *string, accentColor *string, listsPublic *bool) (*models.User, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "service.UpdateCustomization",
+		trace.WithAttributes(
+			attribute.String("user.id", id),
+			attribute.String("service", "users"),
+			attribute.String("method", "UpdateCustomization"),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	return service.usersRepository.UpdateCustomization(ctx, id, bio, accentColor, listsPublic)
+}
+
+// GetUserByUsername backs the public page lookup. Nil, nil when nothing matches,
+// which the resolver turns into a 404-shaped null rather than an error.
+func (service *usersService) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
+	tracer := tracing.GetTracer(ctx)
+	ctx, span := tracer.Start(ctx, "service.GetUserByUsername",
+		trace.WithAttributes(
+			attribute.String("service", "users"),
+			attribute.String("method", "GetUserByUsername"),
+		),
+		tracing.GetEnvironmentAttribute(),
+	)
+	defer span.End()
+
+	return service.usersRepository.GetUserByUsername(ctx, username)
+}

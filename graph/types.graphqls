@@ -11,6 +11,34 @@ type User @key(fields: "id") {
     language: Language!
     email: String
     profileImageUrl: String
+    "The wide header image behind the profile."
+    bannerImageUrl: String
+    "A short line the user writes about themselves."
+    bio: String
+    "A palette token name that themes the page, e.g. \"violet\"."
+    accentColor: String
+    "Whether this user's watch and read lists are shown on their public page."
+    listsPublic: Boolean!
+}
+
+"""
+The safe subset of a User, for anyone to see.
+
+A separate type rather than the whole User, so a public query can never be
+widened into email, sessions, or language just by selecting more fields. Only
+what a page header renders is here.
+"""
+type PublicUser {
+    id: ID!
+    username: String!
+    firstname: String!
+    lastname: String!
+    profileImageUrl: String
+    bannerImageUrl: String
+    bio: String
+    accentColor: String
+    "Whether the lists section is shown. False means the header stands alone."
+    listsPublic: Boolean!
 }
 
 input CreateUserInput {
@@ -29,4 +57,7 @@ input UpdateUserInput {
     email: String
     language: Language
     profileImageUrl: String
+    bio: String
+    accentColor: String
+    listsPublic: Boolean
 }

@@ -77,8 +77,8 @@ jobs:
 
             SELECT count(*) INTO n FROM information_schema.columns
               WHERE table_schema='public' AND table_name <> 'schema_migrations';
-            IF n <> 9 THEN
-              RAISE EXCEPTION 'expected 9 columns, found %', n;
+            IF n <> 13 THEN
+              RAISE EXCEPTION 'expected 13 columns, found %', n;
             END IF;
           END $$;
           SQL
