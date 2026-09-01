@@ -11,4 +11,7 @@ type User interface {
 	GetUserDetails(ctx context.Context, id string) (*models.User, error)
 	UpdateUser(ctx context.Context, id string, username *string, firstName *string, lastName *string, language *string, email *string) (*models.User, error)
 	UpdateProfileImageURL(ctx context.Context, id string, profileImageURL string) (*models.User, error)
+	UpdateBannerImageURL(ctx context.Context, id string, bannerImageURL string) (*models.User, error)
+	UpdateCustomization(ctx context.Context, id string, bio *string, accentColor *string, listsPublic *bool) (*models.User, error)
+	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 }

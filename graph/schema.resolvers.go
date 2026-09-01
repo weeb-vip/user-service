@@ -28,9 +28,19 @@ func (r *mutationResolver) UploadProfileImage(ctx context.Context, image graphql
 	return resolvers.UploadProfileImage(ctx, r.UserService, r.ImageService, image)
 }
 
+// UploadBannerImage is the resolver for the UploadBannerImage field.
+func (r *mutationResolver) UploadBannerImage(ctx context.Context, image graphql.Upload) (*model.User, error) {
+	return resolvers.UploadBannerImage(ctx, r.UserService, r.ImageService, image)
+}
+
 // UserDetails is the resolver for the UserDetails field.
 func (r *queryResolver) UserDetails(ctx context.Context) (*model.User, error) {
 	return resolvers.GetUser(ctx, r.UserService)
+}
+
+// UserByUsername is the resolver for the userByUsername field.
+func (r *queryResolver) UserByUsername(ctx context.Context, username string) (*model.PublicUser, error) {
+	return resolvers.UserByUsername(ctx, r.UserService, username)
 }
 
 // Mutation returns generated.MutationResolver implementation.

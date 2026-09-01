@@ -8,8 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	models "github.com/weeb-vip/user-service/internal/services/users/models"
 	gomock "github.com/golang/mock/gomock"
+	models "github.com/weeb-vip/user-service/internal/services/users/models"
 )
 
 // MockUser is a mock of User interface.
@@ -36,18 +36,33 @@ func (m *MockUser) EXPECT() *MockUserMockRecorder {
 }
 
 // AddUser mocks base method.
-func (m *MockUser) AddUser(arg0 context.Context, arg1, arg2, arg3, arg4 string) (*models.User, error) {
+func (m *MockUser) AddUser(arg0 context.Context, arg1, arg2, arg3, arg4, arg5 string) (*models.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddUser", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "AddUser", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddUser indicates an expected call of AddUser.
-func (mr *MockUserMockRecorder) AddUser(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockUserMockRecorder) AddUser(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockUser)(nil).AddUser), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockUser)(nil).AddUser), arg0, arg1, arg2, arg3, arg4, arg5)
+}
+
+// GetUserByUsername mocks base method.
+func (m *MockUser) GetUserByUsername(arg0 context.Context, arg1 string) (*models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByUsername", arg0, arg1)
+	ret0, _ := ret[0].(*models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByUsername indicates an expected call of GetUserByUsername.
+func (mr *MockUserMockRecorder) GetUserByUsername(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockUser)(nil).GetUserByUsername), arg0, arg1)
 }
 
 // GetUserDetails mocks base method.
@@ -63,4 +78,64 @@ func (m *MockUser) GetUserDetails(arg0 context.Context, arg1 string) (*models.Us
 func (mr *MockUserMockRecorder) GetUserDetails(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserDetails", reflect.TypeOf((*MockUser)(nil).GetUserDetails), arg0, arg1)
+}
+
+// UpdateBannerImageURL mocks base method.
+func (m *MockUser) UpdateBannerImageURL(arg0 context.Context, arg1, arg2 string) (*models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateBannerImageURL", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateBannerImageURL indicates an expected call of UpdateBannerImageURL.
+func (mr *MockUserMockRecorder) UpdateBannerImageURL(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBannerImageURL", reflect.TypeOf((*MockUser)(nil).UpdateBannerImageURL), arg0, arg1, arg2)
+}
+
+// UpdateCustomization mocks base method.
+func (m *MockUser) UpdateCustomization(arg0 context.Context, arg1 string, arg2, arg3 *string, arg4 *bool) (*models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCustomization", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(*models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCustomization indicates an expected call of UpdateCustomization.
+func (mr *MockUserMockRecorder) UpdateCustomization(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCustomization", reflect.TypeOf((*MockUser)(nil).UpdateCustomization), arg0, arg1, arg2, arg3, arg4)
+}
+
+// UpdateProfileImageURL mocks base method.
+func (m *MockUser) UpdateProfileImageURL(arg0 context.Context, arg1, arg2 string) (*models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfileImageURL", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateProfileImageURL indicates an expected call of UpdateProfileImageURL.
+func (mr *MockUserMockRecorder) UpdateProfileImageURL(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileImageURL", reflect.TypeOf((*MockUser)(nil).UpdateProfileImageURL), arg0, arg1, arg2)
+}
+
+// UpdateUser mocks base method.
+func (m *MockUser) UpdateUser(arg0 context.Context, arg1 string, arg2, arg3, arg4, arg5, arg6 *string) (*models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret0, _ := ret[0].(*models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockUserMockRecorder) UpdateUser(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUser)(nil).UpdateUser), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }

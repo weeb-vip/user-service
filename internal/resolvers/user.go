@@ -160,24 +160,13 @@ func GetUser( // nolint
 		return nil, err
 	}
 
-	// convert user language to model.Language
-	language := model.Language(user.Language)
-
 	metrics.GetAppMetrics().ResolverMetric(
 		float64(time.Since(startTime).Milliseconds()),
 		"GetUser",
 		metrics.Success,
 	)
 
-	return &model.User{
-		ID:              user.ID,
-		Firstname:       user.FirstName,
-		Lastname:        user.LastName,
-		Username:        user.Username,
-		Language:        language,
-		Email:           user.Email,
-		ProfileImageURL: user.ProfileImageURL,
-	}, nil
+	return toGraphUser(user), nil
 }
 
 func UpdateUser( // nolint
@@ -221,9 +210,19 @@ func UpdateUser( // nolint
 		return nil, err
 	}
 
-	var userLanguage model.Language
-	if updatedUser.Language != "" {
-		userLanguage = model.Language(updatedUser.Language)
+	// The customization fields live in their own write so the core update above
+	// does not have to know about them. Only touched when one is actually sent.
+	if input.Bio != nil || input.AccentColor != nil || input.ListsPublic != nil {
+		customized, cerr := userService.UpdateCustomization(ctx, *userID, input.Bio, input.AccentColor, input.ListsPublic)
+		if cerr != nil {
+			metrics.GetAppMetrics().ResolverMetric(
+				float64(time.Since(startTime).Milliseconds()),
+				"UpdateUser",
+				metrics.Error,
+			)
+			return nil, cerr
+		}
+		updatedUser = customized
 	}
 
 	metrics.GetAppMetrics().ResolverMetric(
@@ -232,13 +231,5 @@ func UpdateUser( // nolint
 		metrics.Success,
 	)
 
-	return &model.User{
-		ID:              updatedUser.ID,
-		Firstname:       updatedUser.FirstName,
-		Lastname:        updatedUser.LastName,
-		Username:        updatedUser.Username,
-		Language:        userLanguage,
-		Email:           updatedUser.Email,
-		ProfileImageURL: updatedUser.ProfileImageURL,
-	}, nil
+	return toGraphUser(updatedUser), nil
 }
