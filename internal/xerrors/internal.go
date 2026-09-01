@@ -21,6 +21,21 @@ func ServiceError(message string, code string) *gqlerror.Error {
 	}
 }
 
+// CustomError is the standard failure shape the API returns: a human-readable
+// message, a stable machine code (not an HTTP status), and the underlying error
+// string for debugging. Clients switch on `code`; `message` is safe to show a
+// user; `error` is the raw detail.
+func CustomError(message, code, errStr string) *gqlerror.Error {
+	return &gqlerror.Error{
+		Message: message,
+		Extensions: map[string]interface{}{
+			"message": message,
+			"code":    code,
+			"error":   errStr,
+		},
+	}
+}
+
 func ChallengeError(
 	message string,
 	code string,

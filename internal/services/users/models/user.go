@@ -6,7 +6,11 @@ import (
 
 type User struct {
 	db.BaseModel
-	Username        string  `json:"username"`
+	// Nullable: an account created from a user-created event has no username
+	// until the person picks one, and that unset state is NULL -- not "" -- so a
+	// unique index can allow any number of not-yet-named accounts while still
+	// rejecting two people who choose the same name.
+	Username        *string `json:"username" gorm:"column:username"`
 	FirstName       string  `json:"first_name"`
 	LastName        string  `json:"last_name"`
 	Language        string  `json:"language"`

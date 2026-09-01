@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"github.com/99designs/gqlgen/graphql"
 	"net/http"
 
@@ -20,9 +19,11 @@ import (
 	"github.com/weeb-vip/user-service/http/middleware"
 	"github.com/weeb-vip/user-service/internal/jwt"
 	"github.com/weeb-vip/user-service/internal/measurements"
+	resolverpkg "github.com/weeb-vip/user-service/internal/resolvers"
 	"github.com/weeb-vip/user-service/internal/services/image"
 	"github.com/weeb-vip/user-service/internal/services/users"
 	"github.com/weeb-vip/user-service/internal/storage/minio"
+	"github.com/weeb-vip/user-service/internal/xerrors"
 )
 
 func BuildRootHandler(tokenizer jwt.Tokenizer) http.Handler { // nolint
@@ -34,11 +35,11 @@ func BuildRootHandler(tokenizer jwt.Tokenizer) http.Handler { // nolint
 	}
 
 	userService := users.NewUserService()
-	
+
 	// Initialize MinIO storage
 	minioStorage := minio.NewMinioStorage(conf.MinioConfig)
 	imageService := image.NewImageService(minioStorage)
-	
+
 	resolvers := &graph.Resolver{
 		UserService:  userService,
 		JwtTokenizer: tokenizer,
@@ -51,12 +52,13 @@ func BuildRootHandler(tokenizer jwt.Tokenizer) http.Handler { // nolint
 
 		if req.UserID == nil {
 			// unauthorized
-			return nil, fmt.Errorf("Access denied")
+			return nil, xerrors.CustomError("You must be signed in to do that", "UNAUTHORIZED", "access denied")
 		}
 
 		return next(ctx)
 	}
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(cfg))
+	srv.SetErrorPresenter(resolverpkg.ErrorPresenter)
 	srv.Use(apollotracing.Tracer{})
 	srv.Use(&middleware.GraphQLTracingExtension{})
 	srv.Use(&middleware.GraphQLMetricsExtension{})

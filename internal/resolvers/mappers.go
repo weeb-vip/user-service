@@ -13,7 +13,7 @@ func toGraphUser(u *models.User) *model.User {
 		ID:              u.ID,
 		Firstname:       u.FirstName,
 		Lastname:        u.LastName,
-		Username:        u.Username,
+		Username:        derefStr(u.Username),
 		Language:        model.Language(u.Language),
 		Email:           u.Email,
 		ProfileImageURL: u.ProfileImageURL,
@@ -30,7 +30,7 @@ func toGraphUser(u *models.User) *model.User {
 func toPublicUser(u *models.User) *model.PublicUser {
 	return &model.PublicUser{
 		ID:              u.ID,
-		Username:        u.Username,
+		Username:        derefStr(u.Username),
 		Firstname:       u.FirstName,
 		Lastname:        u.LastName,
 		ProfileImageURL: u.ProfileImageURL,
@@ -39,4 +39,14 @@ func toPublicUser(u *models.User) *model.PublicUser {
 		AccentColor:     u.AccentColor,
 		ListsPublic:     u.ListsPublic,
 	}
+}
+
+// derefStr flattens a nullable stored value onto a non-null API field. A user
+// with no username set (NULL) is exposed as "" rather than failing the field's
+// non-null contract -- they are simply a user who has not named their page yet.
+func derefStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
