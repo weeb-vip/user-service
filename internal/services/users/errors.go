@@ -4,6 +4,7 @@ const (
 	UserErrorInternalError ErrorCode = "INTERNAL_ERROR"      // nolint
 	UserErrorUserExists    ErrorCode = "USER_EXISTS"         // nolint
 	UserErrorInvalidUsers  ErrorCode = "INVALID_CREDENTIALS" // nolint
+	UserErrorUsernameTaken ErrorCode = "USERNAME_TAKEN"      // nolint
 )
 
 type ErrorCode string

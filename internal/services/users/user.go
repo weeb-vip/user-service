@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/weeb-vip/user-service/internal/services/users/models"
@@ -218,7 +219,46 @@ func (service *usersService) UpdateUser(
 
 	startTime := time.Now()
 
+	// A username identifies a public page, so it has to stay unique. Check
+	// before writing to give a clean "taken" error rather than a raw database
+	// failure; the unique index below is still the real guarantee, since two
+	// requests can pass this check at the same moment.
+	if username != nil && *username != "" {
+		existing, lookupErr := service.usersRepository.GetUserByUsername(ctx, *username)
+		if lookupErr != nil {
+			metrics.GetAppMetrics().ServiceMetric(
+				float64(time.Since(startTime).Milliseconds()),
+				"users",
+				"UpdateUser",
+				metrics.Error,
+			)
+			return nil, &Error{Code: UserErrorInternalError, Message: "database error"}
+		}
+		if existing != nil && existing.ID != id {
+			metrics.GetAppMetrics().ServiceMetric(
+				float64(time.Since(startTime).Milliseconds()),
+				"users",
+				"UpdateUser",
+				metrics.Error,
+			)
+			return nil, &Error{Code: UserErrorUsernameTaken, Message: "That username is already taken"}
+		}
+	}
+
 	result, err := service.usersRepository.UpdateUser(ctx, id, username, firstName, lastName, language, email)
+
+	// A unique-index violation means someone took the name in the gap between
+	// the check above and this write -- surface it as the same friendly error,
+	// not an opaque internal one. 23505 is Postgres's unique_violation SQLSTATE.
+	if err != nil && strings.Contains(err.Error(), "23505") {
+		metrics.GetAppMetrics().ServiceMetric(
+			float64(time.Since(startTime).Milliseconds()),
+			"users",
+			"UpdateUser",
+			metrics.Error,
+		)
+		return nil, &Error{Code: UserErrorUsernameTaken, Message: "That username is already taken"}
+	}
 
 	metricResult := metrics.Success
 	if err != nil {

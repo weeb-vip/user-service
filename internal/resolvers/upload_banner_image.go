@@ -10,6 +10,7 @@ import (
 	"github.com/weeb-vip/user-service/http/handlers/requestinfo"
 	"github.com/weeb-vip/user-service/internal/services/image"
 	"github.com/weeb-vip/user-service/internal/services/users"
+	"github.com/weeb-vip/user-service/internal/xerrors"
 	"github.com/weeb-vip/user-service/metrics"
 	"github.com/weeb-vip/user-service/tracing"
 	"go.opentelemetry.io/otel/attribute"
@@ -36,7 +37,7 @@ func UploadBannerImage(ctx context.Context, userService users.User, imageService
 	req := requestinfo.FromContext(ctx)
 	if req.UserID == nil {
 		metrics.GetAppMetrics().ResolverMetric(float64(time.Since(startTime).Milliseconds()), "UploadBannerImage", metrics.Error)
-		return nil, fmt.Errorf("unauthorized")
+		return nil, xerrors.CustomError("You must be signed in to do that", "UNAUTHORIZED", "unauthorized")
 	}
 	userID := *req.UserID
 	span.SetAttributes(attribute.String("user.id", userID))
@@ -44,7 +45,7 @@ func UploadBannerImage(ctx context.Context, userService users.User, imageService
 	currentUser, err := userService.GetUserDetails(ctx, userID)
 	if err != nil {
 		metrics.GetAppMetrics().ResolverMetric(float64(time.Since(startTime).Milliseconds()), "UploadBannerImage", metrics.Error)
-		return nil, fmt.Errorf("failed to get user: %w", err)
+		return nil, xerrors.CustomError("Something went wrong", "INTERNAL_ERROR", fmt.Sprintf("failed to get user: %v", err))
 	}
 
 	oldImagePath := ""
@@ -55,7 +56,7 @@ func UploadBannerImage(ctx context.Context, userService users.User, imageService
 	imagePath, err := imageService.UploadBannerImage(ctx, userID, upload)
 	if err != nil {
 		metrics.GetAppMetrics().ResolverMetric(float64(time.Since(startTime).Milliseconds()), "UploadBannerImage", metrics.Error)
-		return nil, fmt.Errorf("failed to upload image: %w", err)
+		return nil, xerrors.CustomError("Could not upload the image", "UPLOAD_FAILED", fmt.Sprintf("failed to upload image: %v", err))
 	}
 	span.SetAttributes(attribute.String("image.path", imagePath))
 
@@ -63,7 +64,7 @@ func UploadBannerImage(ctx context.Context, userService users.User, imageService
 	if err != nil {
 		_ = imageService.DeleteProfileImage(ctx, imagePath)
 		metrics.GetAppMetrics().ResolverMetric(float64(time.Since(startTime).Milliseconds()), "UploadBannerImage", metrics.Error)
-		return nil, fmt.Errorf("failed to update user profile: %w", err)
+		return nil, xerrors.CustomError("Something went wrong", "INTERNAL_ERROR", fmt.Sprintf("failed to update user profile: %v", err))
 	}
 
 	if oldImagePath != "" {

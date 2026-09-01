@@ -70,9 +70,16 @@ func (repository *userRepository) AddUser(
 	start := time.Now()
 	database := repository.DBService.GetDB()
 
+	// An empty username from a create event is stored as NULL, so it neither
+	// occupies the name "" nor trips the unique index shared with every other
+	// unnamed account.
+	var usernamePtr *string
+	if username != "" {
+		usernamePtr = &username
+	}
 	credentials := models.User{
 		BaseModel: db.BaseModel{ID: userID},
-		Username:  username,
+		Username:  usernamePtr,
 		FirstName: firstName,
 		LastName:  lastName,
 		Language:  language,
@@ -180,7 +187,15 @@ func (repository *userRepository) GetUserByUsername(ctx context.Context, usernam
 
 	var credentials models.User
 
-	err := database.WithContext(ctx).Where("username = ?", username).First(&credentials).Error
+	// A blank lookup has no answer -- unset usernames are NULL and must not be
+	// reachable as if they were the name "".
+	if username == "" {
+		return nil, nil
+	}
+
+	// Case-insensitive: usernames are unique without regard to case, so the
+	// lookup that backs the public page has to match the same way the index does.
+	err := database.WithContext(ctx).Where("lower(username) = lower(?)", username).First(&credentials).Error
 
 	// Record database metrics
 	duration := float64(time.Since(start).Nanoseconds()) / float64(time.Millisecond)
@@ -230,7 +245,11 @@ func (repository *userRepository) UpdateUser(
 	}
 
 	if username != nil {
-		user.Username = *username
+		if *username == "" {
+			user.Username = nil
+		} else {
+			user.Username = username
+		}
 	}
 
 	if firstName != nil {
