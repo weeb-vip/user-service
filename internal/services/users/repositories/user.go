@@ -29,7 +29,7 @@ type UsersRepository interface {
 	UpdateUser(ctx context.Context, id string, username *string, firstName *string, lastName *string, language *string, email *string) (*models.User, error)
 	UpdateProfileImageURL(ctx context.Context, id string, profileImageURL string) (*models.User, error)
 	UpdateBannerImageURL(ctx context.Context, id string, bannerImageURL string) (*models.User, error)
-	UpdateCustomization(ctx context.Context, id string, bio *string, accentColor *string, listsPublic *bool) (*models.User, error)
+	UpdateCustomization(ctx context.Context, id string, bio *string, accentColor *string, listsPublic *bool, followApprovalRequired *bool) (*models.User, error)
 	DeleteUser(ctx context.Context, username string) error
 }
 
@@ -402,6 +402,7 @@ func (repository *userRepository) UpdateCustomization(
 	bio *string,
 	accentColor *string,
 	listsPublic *bool,
+	followApprovalRequired *bool,
 ) (*models.User, error) {
 	tracer := tracing.GetTracer(ctx)
 	ctx, span := tracer.Start(ctx, "repository.UpdateCustomization",
@@ -433,6 +434,9 @@ func (repository *userRepository) UpdateCustomization(
 	}
 	if listsPublic != nil {
 		user.ListsPublic = *listsPublic
+	}
+	if followApprovalRequired != nil {
+		user.FollowApprovalRequired = *followApprovalRequired
 	}
 
 	err = database.WithContext(ctx).Save(&user).Error

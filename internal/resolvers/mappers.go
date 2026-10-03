@@ -21,6 +21,8 @@ func toGraphUser(u *models.User) *model.User {
 		Bio:             u.Bio,
 		AccentColor:     u.AccentColor,
 		ListsPublic:     u.ListsPublic,
+
+		FollowApprovalRequired: u.FollowApprovalRequired,
 	}
 }
 
@@ -38,6 +40,8 @@ func toPublicUser(u *models.User) *model.PublicUser {
 		Bio:             u.Bio,
 		AccentColor:     u.AccentColor,
 		ListsPublic:     u.ListsPublic,
+
+		FollowApprovalRequired: u.FollowApprovalRequired,
 	}
 }
 

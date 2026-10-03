@@ -353,7 +353,7 @@ func (service *usersService) UpdateBannerImageURL(ctx context.Context, id string
 }
 
 // UpdateCustomization persists the page's bio, accent and list visibility.
-func (service *usersService) UpdateCustomization(ctx context.Context, id string, bio *string, accentColor *string, listsPublic *bool) (*models.User, error) {
+func (service *usersService) UpdateCustomization(ctx context.Context, id string, bio *string, accentColor *string, listsPublic *bool, followApprovalRequired *bool) (*models.User, error) {
 	tracer := tracing.GetTracer(ctx)
 	ctx, span := tracer.Start(ctx, "service.UpdateCustomization",
 		trace.WithAttributes(
@@ -365,7 +365,7 @@ func (service *usersService) UpdateCustomization(ctx context.Context, id string,
 	)
 	defer span.End()
 
-	return service.usersRepository.UpdateCustomization(ctx, id, bio, accentColor, listsPublic)
+	return service.usersRepository.UpdateCustomization(ctx, id, bio, accentColor, listsPublic, followApprovalRequired)
 }
 
 // GetUserByUsername backs the public page lookup. Nil, nil when nothing matches,

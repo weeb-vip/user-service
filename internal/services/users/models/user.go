@@ -20,4 +20,7 @@ type User struct {
 	Bio             *string `json:"bio" gorm:"column:bio"`
 	AccentColor     *string `json:"accent_color" gorm:"column:accent_color"`
 	ListsPublic     bool    `json:"lists_public" gorm:"column:lists_public;not null;default:false"`
+	// FollowApprovalRequired makes new follows pending until this user accepts
+	// them, and hides their follower and following lists from non-followers.
+	FollowApprovalRequired bool `json:"follow_approval_required" gorm:"column:follow_approval_required;not null;default:false"`
 }

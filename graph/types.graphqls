@@ -19,6 +19,8 @@ type User @key(fields: "id") {
     accentColor: String
     "Whether this user's watch and read lists are shown on their public page."
     listsPublic: Boolean!
+    "Whether a follow must be approved by this user before it is live."
+    followApprovalRequired: Boolean!
 }
 
 """
@@ -28,7 +30,7 @@ A separate type rather than the whole User, so a public query can never be
 widened into email, sessions, or language just by selecting more fields. Only
 what a page header renders is here.
 """
-type PublicUser {
+type PublicUser @key(fields: "id") {
     id: ID!
     username: String!
     firstname: String!
@@ -39,6 +41,39 @@ type PublicUser {
     accentColor: String
     "Whether the lists section is shown. False means the header stands alone."
     listsPublic: Boolean!
+    "Whether a follow must be approved before it is live. Also hides the follower and following lists from non-followers."
+    followApprovalRequired: Boolean!
+    "Accepted followers. Always visible, even when the list itself is not."
+    followerCount: Int! @goField(forceResolver: true)
+    "Accepted follows. Always visible, even when the list itself is not."
+    followingCount: Int! @goField(forceResolver: true)
+    "How the current viewer relates to this user. NONE when not signed in."
+    viewerFollowStatus: FollowStatus! @goField(forceResolver: true)
+}
+
+"""
+The viewer's relationship to a user, from the viewer's side.
+"""
+enum FollowStatus {
+    "No edge, or not signed in."
+    NONE
+    "The viewer asked to follow and the user has not yet approved."
+    REQUESTED
+    "The viewer follows the user."
+    FOLLOWING
+    "The viewer is looking at themselves."
+    SELF
+}
+
+"""
+A page of users, for follower and following lists. Same page/limit/total shape
+as the list-service pages so one client component renders both.
+"""
+type PublicUserPaginated {
+    page: Int!
+    limit: Int!
+    total: Int!
+    users: [PublicUser!]!
 }
 
 input CreateUserInput {
@@ -60,4 +95,5 @@ input UpdateUserInput {
     bio: String
     accentColor: String
     listsPublic: Boolean
+    followApprovalRequired: Boolean
 }

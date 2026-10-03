@@ -20,6 +20,8 @@ import (
 	"github.com/weeb-vip/user-service/internal/jwt"
 	"github.com/weeb-vip/user-service/internal/measurements"
 	resolverpkg "github.com/weeb-vip/user-service/internal/resolvers"
+	"github.com/weeb-vip/user-service/internal/services/follows"
+	followrepos "github.com/weeb-vip/user-service/internal/services/follows/repositories"
 	"github.com/weeb-vip/user-service/internal/services/image"
 	"github.com/weeb-vip/user-service/internal/services/users"
 	"github.com/weeb-vip/user-service/internal/storage/minio"
@@ -40,11 +42,16 @@ func BuildRootHandler(tokenizer jwt.Tokenizer) http.Handler { // nolint
 	minioStorage := minio.NewMinioStorage(conf.MinioConfig)
 	imageService := image.NewImageService(minioStorage)
 
+	// The follow graph writes its events through go-outbox-lib in the same
+	// transaction as the edge change; `relay outbox` publishes them.
+	followsService := follows.New(followrepos.NewFollowsRepository(), userService, follows.OutboxWriter{})
+
 	resolvers := &graph.Resolver{
-		UserService:  userService,
-		JwtTokenizer: tokenizer,
-		Config:       *conf,
-		ImageService: imageService,
+		UserService:    userService,
+		JwtTokenizer:   tokenizer,
+		Config:         *conf,
+		ImageService:   imageService,
+		FollowsService: followsService,
 	}
 	cfg := generated.Config{Resolvers: resolvers}
 	cfg.Directives.Authenticated = func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {

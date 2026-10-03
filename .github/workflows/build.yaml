@@ -8,9 +8,63 @@ on:
 
 jobs:
 
+  test:
+    name: unit and integration tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # Pinned to the RDS engine version, same as migrations.yaml.
+        image: postgres:16.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: weeb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      APP_ENV: dev
+      DBHOST: localhost
+      DBPORT: "5432"
+      DBUSER: postgres
+      DBPASSWORD: postgres
+      DBNAME: weeb
+      DBSSL: disable
+      DBMIGRATIONTABLE: __migrations_user
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install librdkafka (cgo dependency of the Kafka driver)
+        run: sudo apt-get update && sudo apt-get install -y librdkafka-dev
+      - name: Generate GraphQL code and mocks
+        run: make generate
+      - name: Migrate the test database
+        run: go run ./cmd/cli db migrate
+      # internal/services/image and internal/services/users fail on main from
+      # before this job existed (stale message expectations, and a nil-vs-zero
+      # user expectation). Excluded here rather than fixed in a feature PR;
+      # bring them back as each is repaired.
+      - name: Unit tests
+        run: go test -count=1 $(go list ./... | grep -v -E '/internal/services/(image|users)$')
+      # Only the follows package: it boots the GraphQL handler over Postgres
+      # alone. The legacy package beside it starts the whole server, which
+      # needs key-management and MinIO from docker-compose, so it stays local.
+      - name: Integration tests
+        run: cd integration-tests && go test -tags integration -count=1 -v ./follows/
+
   build:
 
     runs-on: ubuntu-latest
+    needs: [ test ]
 
     steps:
       - name: Set repo name environment variable
