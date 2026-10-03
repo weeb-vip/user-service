@@ -38,9 +38,17 @@ go run cmd/cli/main.go server
 # Start with live reloading (Air is configured)
 air
 
-# Run the Kafka consumer for user events
-go run cmd/cli/main.go user-created-event
+# Run the user-created consumer (NATS in production; `eventing user-created` is the Kafka twin)
+go run cmd/cli/main.go eventing user-created-nats
+
+# Publish outbox_events rows (follow-graph events) to NATS JetStream
+go run cmd/cli/main.go relay outbox
 ```
+
+### Local toolchain notes (macOS)
+- Run `gqlgen` and `go mod tidy` with `GOTOOLCHAIN=go1.24.0` so the `go` line in go.mod is not bumped.
+- Linking the binary needs the full Xcode toolchain on recent macOS: `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer go build ./cmd/cli`. The Command Line Tools linker rejects the SDK stubs the cgo Kafka driver links against.
+- Until go-outbox-lib is published, build with a `go.work` that includes `../go-outbox-lib`.
 
 ### Testing
 ```bash
@@ -52,6 +60,12 @@ go test -cover ./...
 
 # Run tests for a specific package
 go test ./internal/jwt/...
+
+# Unit tests that need Postgres (users, follows repositories) read DBHOST/DBPORT/DBUSER/DBPASSWORD/DBNAME/DBSSL
+# and expect the migrations to be applied (`go run cmd/cli/main.go db migrate`).
+
+# End-to-end tests (build tag `integration`): boot the real GraphQL handler over the real database
+make test-integration
 
 # Run image service tests with verbose output
 go test ./internal/services/image -v
@@ -87,18 +101,30 @@ golangci-lint run --fix
   - `migrations/`: Database migration scripts
   - `storage/`: Storage abstraction with MinIO implementation
   - `services/`: Business logic services
+    - `users/`: profiles, the `follow_approval_required` flag
+    - `follows/`: the follow graph (request/approval, visibility rule), its `user-follow` outbox events
   - `resolvers/`: GraphQL resolver implementations
+- `handlers/`: long-running commands: the user-created consumer and the outbox relay
+- `integration-tests/follows/`: end-to-end tests for the follow graph (in-process handler + Postgres)
 
 ### Configuration
 The service uses environment-based configuration loaded from `config/config.{env}.json` files. Key configurations:
 - **APP_ENV**: Controls which config file to load (dev/docker/prod)
-- **Database**: MySQL/MariaDB connection configured via DB* environment variables
-- **Kafka**: Bootstrap servers and consumer group configuration
+- **Database**: Postgres connection configured via DB* environment variables
+- **Kafka/NATS**: NATS JetStream is what production uses (`NATSURL`); the Kafka consumer is the legacy twin
+- **Outbox**: `OUTBOX_*` tune the relay (see go-outbox-lib)
 - **MinIO**: Object storage endpoint and credentials
 - **JWT**: Token validity duration and key rotation settings
 
 ### GraphQL Federation
 The service is configured for Apollo Federation with entity resolution support. Schema files are in `graph/*.graphqls` with generated code in `graph/generated/`.
+
+### Follow graph
+- `user_follows(follower_id, followee_id, status, created_at, accepted_at)`; status is `pending` or `accepted`.
+- A user with `follow_approval_required` gets pending requests and hides their follower/following lists from non-followers; counts stay public.
+- Every change writes a row to `outbox_events` in the same transaction (subject `user-follow`, types `follow_requested | follow_accepted | follow_declined | unfollowed | follower_removed`). `relay outbox` publishes them with `Nats-Msg-Id` = event id.
+- `PublicUser` is a federation entity (`@key(fields: "id")`) so other subgraphs can return `PublicUser{id}`.
+- `followerIDs(userID, after, limit)` is the keyset page notifications-service uses for fan-out.
 
 ### Important Notes
 - The service includes a health check endpoint at `/readyz` and `/livez`

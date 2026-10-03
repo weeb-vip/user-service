@@ -33,6 +33,31 @@ func (r *mutationResolver) UploadBannerImage(ctx context.Context, image graphql.
 	return resolvers.UploadBannerImage(ctx, r.UserService, r.ImageService, image)
 }
 
+// Follow is the resolver for the follow field.
+func (r *mutationResolver) Follow(ctx context.Context, userID string) (model.FollowStatus, error) {
+	return resolvers.Follow(ctx, r.FollowsService, userID)
+}
+
+// Unfollow is the resolver for the unfollow field.
+func (r *mutationResolver) Unfollow(ctx context.Context, userID string) (bool, error) {
+	return resolvers.Unfollow(ctx, r.FollowsService, userID)
+}
+
+// AcceptFollowRequest is the resolver for the acceptFollowRequest field.
+func (r *mutationResolver) AcceptFollowRequest(ctx context.Context, followerID string) (bool, error) {
+	return resolvers.AcceptFollowRequest(ctx, r.FollowsService, followerID)
+}
+
+// DeclineFollowRequest is the resolver for the declineFollowRequest field.
+func (r *mutationResolver) DeclineFollowRequest(ctx context.Context, followerID string) (bool, error) {
+	return resolvers.DeclineFollowRequest(ctx, r.FollowsService, followerID)
+}
+
+// RemoveFollower is the resolver for the removeFollower field.
+func (r *mutationResolver) RemoveFollower(ctx context.Context, followerID string) (bool, error) {
+	return resolvers.RemoveFollower(ctx, r.FollowsService, followerID)
+}
+
 // UserDetails is the resolver for the UserDetails field.
 func (r *queryResolver) UserDetails(ctx context.Context) (*model.User, error) {
 	return resolvers.GetUser(ctx, r.UserService)
@@ -41,6 +66,31 @@ func (r *queryResolver) UserDetails(ctx context.Context) (*model.User, error) {
 // UserByUsername is the resolver for the userByUsername field.
 func (r *queryResolver) UserByUsername(ctx context.Context, username string) (*model.PublicUser, error) {
 	return resolvers.UserByUsername(ctx, r.UserService, username)
+}
+
+// PublicUserByID is the resolver for the publicUserByID field.
+func (r *queryResolver) PublicUserByID(ctx context.Context, id string) (*model.PublicUser, error) {
+	return resolvers.PublicUserByID(ctx, r.UserService, id)
+}
+
+// Followers is the resolver for the followers field.
+func (r *queryResolver) Followers(ctx context.Context, userID string, page int, limit int) (*model.PublicUserPaginated, error) {
+	return resolvers.Followers(ctx, r.FollowsService, userID, page, limit)
+}
+
+// Following is the resolver for the following field.
+func (r *queryResolver) Following(ctx context.Context, userID string, page int, limit int) (*model.PublicUserPaginated, error) {
+	return resolvers.Following(ctx, r.FollowsService, userID, page, limit)
+}
+
+// FollowRequests is the resolver for the followRequests field.
+func (r *queryResolver) FollowRequests(ctx context.Context, page int, limit int) (*model.PublicUserPaginated, error) {
+	return resolvers.FollowRequests(ctx, r.FollowsService, page, limit)
+}
+
+// FollowerIDs is the resolver for the followerIDs field.
+func (r *queryResolver) FollowerIDs(ctx context.Context, userID string, after *string, limit int) ([]string, error) {
+	return resolvers.FollowerIDs(ctx, r.FollowsService, userID, after, limit)
 }
 
 // Mutation returns generated.MutationResolver implementation.

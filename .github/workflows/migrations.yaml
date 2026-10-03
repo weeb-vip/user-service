@@ -71,14 +71,16 @@ jobs:
             SELECT count(*) INTO n FROM information_schema.tables
               WHERE table_schema='public' AND table_type='BASE TABLE'
                 AND table_name <> 'schema_migrations';
-            IF n <> 1 THEN
-              RAISE EXCEPTION 'expected 1 tables, found %', n;
+            -- users, user_follows, outbox_events.
+            IF n <> 3 THEN
+              RAISE EXCEPTION 'expected 3 tables, found %', n;
             END IF;
 
             SELECT count(*) INTO n FROM information_schema.columns
               WHERE table_schema='public' AND table_name <> 'schema_migrations';
-            IF n <> 13 THEN
-              RAISE EXCEPTION 'expected 13 columns, found %', n;
+            -- users 14 + user_follows 5 + outbox_events 5.
+            IF n <> 24 THEN
+              RAISE EXCEPTION 'expected 24 columns, found %', n;
             END IF;
           END $$;
           SQL

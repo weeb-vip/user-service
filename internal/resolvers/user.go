@@ -212,8 +212,8 @@ func UpdateUser( // nolint
 
 	// The customization fields live in their own write so the core update above
 	// does not have to know about them. Only touched when one is actually sent.
-	if input.Bio != nil || input.AccentColor != nil || input.ListsPublic != nil {
-		customized, cerr := userService.UpdateCustomization(ctx, *userID, input.Bio, input.AccentColor, input.ListsPublic)
+	if input.Bio != nil || input.AccentColor != nil || input.ListsPublic != nil || input.FollowApprovalRequired != nil {
+		customized, cerr := userService.UpdateCustomization(ctx, *userID, input.Bio, input.AccentColor, input.ListsPublic, input.FollowApprovalRequired)
 		if cerr != nil {
 			metrics.GetAppMetrics().ResolverMetric(
 				float64(time.Since(startTime).Milliseconds()),

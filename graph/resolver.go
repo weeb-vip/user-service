@@ -3,6 +3,7 @@ package graph
 import (
 	"github.com/weeb-vip/user-service/config"
 	"github.com/weeb-vip/user-service/internal/jwt"
+	"github.com/weeb-vip/user-service/internal/services/follows"
 	"github.com/weeb-vip/user-service/internal/services/image"
 	"github.com/weeb-vip/user-service/internal/services/users"
 )
@@ -12,8 +13,9 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	UserService  users.User
-	JwtTokenizer jwt.Tokenizer
-	Config       config.Config
-	ImageService *image.ImageService
+	UserService    users.User
+	JwtTokenizer   jwt.Tokenizer
+	Config         config.Config
+	ImageService   *image.ImageService
+	FollowsService follows.Follows
 }

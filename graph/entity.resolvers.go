@@ -12,6 +12,11 @@ import (
 	"github.com/weeb-vip/user-service/internal/resolvers"
 )
 
+// FindPublicUserByID is the resolver for the findPublicUserByID field.
+func (r *entityResolver) FindPublicUserByID(ctx context.Context, id string) (*model.PublicUser, error) {
+	return resolvers.PublicUserByID(ctx, r.UserService, id)
+}
+
 // FindUserByID is the resolver for the findUserByID field.
 func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {
 	return resolvers.GetUser(ctx, r.UserService)

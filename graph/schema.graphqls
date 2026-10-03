@@ -11,6 +11,27 @@ type Query {
     email, sessions, or anything the header does not show.
     """
     userByUsername(username: String!): PublicUser
+    """
+    A user's public page, by id. Null when no such user. Lets another subgraph
+    (notifications-service) reference a user it only knows the id of.
+    """
+    publicUserByID(id: ID!): PublicUser
+    """
+    Accepted followers of a user. For a user who requires approval the list is
+    visible only to that user and their accepted followers; others get an
+    empty page whose total is still correct.
+    """
+    followers(userID: ID!, page: Int!, limit: Int!): PublicUserPaginated!
+    "Users a user follows. Same visibility rule as followers."
+    following(userID: ID!, page: Int!, limit: Int!): PublicUserPaginated!
+    "Pending requests to follow the signed-in user."
+    followRequests(page: Int!, limit: Int!): PublicUserPaginated! @Authenticated
+    """
+    Accepted follower ids, in id order, after the given id. Internal: used by
+    notifications-service to fan activity out. Keyset paginated because the
+    caller reads the whole set.
+    """
+    followerIDs(userID: ID!, after: ID, limit: Int!): [ID!]!
 }
 
 type Mutation {
@@ -18,4 +39,12 @@ type Mutation {
     UpdateUserDetails(input: UpdateUserInput!): User! @Authenticated
     UploadProfileImage(image: Upload!): User! @Authenticated
     UploadBannerImage(image: Upload!): User! @Authenticated
+    "Follow a user. Returns FOLLOWING, or REQUESTED when they require approval."
+    follow(userID: ID!): FollowStatus! @Authenticated
+    "Withdraw a request or stop following. True when an edge was removed."
+    unfollow(userID: ID!): Boolean! @Authenticated
+    acceptFollowRequest(followerID: ID!): Boolean! @Authenticated
+    declineFollowRequest(followerID: ID!): Boolean! @Authenticated
+    "Remove an accepted follower."
+    removeFollower(followerID: ID!): Boolean! @Authenticated
 }

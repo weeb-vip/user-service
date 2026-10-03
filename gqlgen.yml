@@ -63,3 +63,7 @@ models:
       - github.com/99designs/gqlgen/graphql.Int32
   Upload:
     model: github.com/99designs/gqlgen/graphql.Upload
+
+# gqlgen would otherwise run `go mod tidy`, which needs every dependency to be
+# fetchable; the workspace already resolves them.
+skip_mod_tidy: true

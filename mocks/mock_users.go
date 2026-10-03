@@ -96,18 +96,18 @@ func (mr *MockUserMockRecorder) UpdateBannerImageURL(arg0, arg1, arg2 interface{
 }
 
 // UpdateCustomization mocks base method.
-func (m *MockUser) UpdateCustomization(arg0 context.Context, arg1 string, arg2, arg3 *string, arg4 *bool) (*models.User, error) {
+func (m *MockUser) UpdateCustomization(arg0 context.Context, arg1 string, arg2, arg3 *string, arg4, arg5 *bool) (*models.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCustomization", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "UpdateCustomization", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateCustomization indicates an expected call of UpdateCustomization.
-func (mr *MockUserMockRecorder) UpdateCustomization(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockUserMockRecorder) UpdateCustomization(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCustomization", reflect.TypeOf((*MockUser)(nil).UpdateCustomization), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCustomization", reflect.TypeOf((*MockUser)(nil).UpdateCustomization), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // UpdateProfileImageURL mocks base method.

@@ -16,6 +16,17 @@ type Config struct {
 	KafkaConfig        KafkaConfig
 	NatsConfig         NatsConfig
 	MinioConfig        MinioConfig
+	OutboxConfig       OutboxConfig
+}
+
+// OutboxConfig tunes the `relay outbox` command (go-outbox-lib). Zero values
+// take the library defaults.
+type OutboxConfig struct {
+	PollIntervalMs int `env:"OUTBOX_POLL_INTERVAL_MS" default:"250"`
+	BatchSize      int `env:"OUTBOX_BATCH_SIZE" default:"100"`
+	RetentionHours int `env:"OUTBOX_RETENTION_HOURS" default:"168"`
+	CleanupMinutes int `env:"OUTBOX_CLEANUP_INTERVAL_MINUTES" default:"60"`
+	BacklogSeconds int `env:"OUTBOX_BACKLOG_INTERVAL_SECONDS" default:"10"`
 }
 
 type AppConfig struct {
